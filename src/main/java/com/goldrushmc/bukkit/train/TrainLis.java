@@ -1,12 +1,12 @@
 package com.goldrushmc.bukkit.train;
 
-import java.util.List;
-
-import org.bukkit.entity.Vehicle;
-import org.bukkit.event.vehicle.VehicleMoveEvent;
-import org.bukkit.metadata.MetadataValue;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
+import com.bergerkiller.bukkit.tc.events.GroupLinkEvent;
+import com.bergerkiller.bukkit.tc.events.MemberRemoveEvent;
 import com.goldrushmc.bukkit.defaults.DefaultListener;
 
 public class TrainLis extends DefaultListener {
@@ -14,14 +14,16 @@ public class TrainLis extends DefaultListener {
 	public TrainLis(JavaPlugin plugin) {
 		super(plugin);
 	}
-	
-	public void trainStart(VehicleMoveEvent e) {
-		Vehicle cart = e.getVehicle();
-		List<MetadataValue> meta = e.getVehicle().getMetadata(null);
-		if(meta.contains("Train")) {
-			cart.getLocation();
-		}
-		
+
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onCartLink(GroupLinkEvent e) {
+		e.setCancelled(true);
+	}
+
+	@EventHandler(priority = EventPriority.HIGHEST)
+	public void onCartBreak(MemberRemoveEvent e) {
+		MinecartGroup mg = e.getGroup();
+		String trainName = mg.getProperties().getTrainName();
 	}
 
 }
