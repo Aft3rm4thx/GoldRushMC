@@ -9,8 +9,8 @@
 	<repositories>
 		<repository>
 			<id>bukkit</id>
-			<name>craftbukkit</name>
-			<url>https://github.com/Bukkit/CraftBukkit.git</url>
+			<name>bukkit</name>
+			<url>https://github.com/Bukkit/Bukkit.git</url>
 		</repository>
 	</repositories>
 
