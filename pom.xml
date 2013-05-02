@@ -8,9 +8,8 @@
 
 	<repositories>
 		<repository>
-			<id>bukkit</id>
-			<name>bukkit</name>
-			<url>https://github.com/Bukkit/Bukkit.git</url>
+			<id>bukkit-repo</id>
+			<url>http://repo.bukkit.org/content/groups/public/</url>
 		</repository>
 	</repositories>
 
@@ -18,9 +17,8 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.5.1-R0.3-SNAPSHOT</version>
-			<type>jar</type>
-			<scope>compile</scope>
+			<version>1.5.1-R0.1</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
