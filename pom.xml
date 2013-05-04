@@ -1,17 +1,53 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>goldrushmc</groupId>
-	<artifactId>goldrushmc</artifactId>
+	<groupId>com.goldrushmc</groupId>
+	<artifactId>GoldRushMC</artifactId>
 	<version>1.0</version>
 	<name>GoldRushMC</name>
 	<description>A Plugin created to facilitate the Minecraft Server "Gold Rush".</description>
 
+	<profiles>
+		<profile>
+			<id>output</id>
+			<build>
+				<directory>B:/Bukkit_TestPlugin/plugins</directory>
+				<defaultGoal>clean install</defaultGoal>
+				<resources>
+					<resource>
+						<directory>E:\.m2\repository\com\bergerkiller\bukkit\TrainCarts\1.72.7</directory>
+						<targetPath>B:/Bukkit_TestPlugin/plugins</targetPath>
+						<includes>
+							<include>*.jar</include>
+						</includes>
+					</resource>
+					<resource>
+						<directory>E:\.m2\repository\com\bergerkiller\bukkit\BKCommonLib\1.52-SNAPSHOT</directory>
+						<targetPath>B:/Bukkit_TestPlugin/plugins</targetPath>
+						<includes>
+							<include>*.jar</include>
+						</includes>
+					</resource>
+					<resource>
+						<directory></directory>
+					</resource>
+				</resources>
+			</build>
+		</profile>
+	</profiles>
+
 	<repositories>
 		<repository>
-			<id>bukkit</id>
-			<name>craftbukkit</name>
-			<url>https://github.com/Bukkit/CraftBukkit.git</url>
+			<id>bukkit-repo</id>
+			<url>http://repo.bukkit.org/content/groups/public/</url>
+		</repository>
+		<repository>
+			<id>dj-tcraft-repo</id>
+			<url>http://ci.dj-tcraft.nl/plugin/repository/everything/</url>
+		</repository>
+		<repository>
+			<id>citizensapi</id>
+			<url>http://ci.citizensnpcs.com/job/CitizensAPI/lastBuild/maven-repository/repository/</url>
 		</repository>
 	</repositories>
 
@@ -19,29 +55,28 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.5.1-R0.3-SNAPSHOT</version>
-			<type>jar</type>
-			<scope>compile</scope>
+			<version>1.5.1-R0.1</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.bergerkiller.bukkit</groupId>
 			<artifactId>TrainCarts</artifactId>
 			<version>1.72.7</version>
 			<type>jar</type>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.citizensnpcs</groupId>
 			<artifactId>citizensapi</artifactId>
 			<version>2.0.8-SNAPSHOT</version>
 			<type>jar</type>
-			<scope>compile</scope>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.bergerkiller.bukkit</groupId>
 			<artifactId>BKCommonLib</artifactId>
-			<version>1.51</version>
-			<scope>compile</scope>
+			<version>1.52-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
@@ -53,6 +88,7 @@
 
 	<build>
 		<finalName>GoldRushMC</finalName>
+		<defaultGoal>clean install</defaultGoal>
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>

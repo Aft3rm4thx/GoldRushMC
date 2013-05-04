@@ -1,0 +1,38 @@
+name: Gold Rush MC
+version: 1.0
+description: The plugin created to facilitate the Gold Rush Server Features
+author: Diremonsoon, lexwebb
+#website: http://forums.bukkit.org/threads/ GET NEW WEBSITE ADDRESS AND APPEND
+
+main: com.goldrushmc.bukkit.main.Main
+
+commands:
+  train:
+   description: Tree for train creation
+   aliases: [train]
+   permission: goldrushmc.train.create
+   usage: |
+           /<command> [Standard, trainName]
+           /<command> [Custom, trainName, numberOfPassengers, numberOfChestCarts]
+           /<command> [Passenger, trainName, numberOfPassengers]
+           /<command> [Storage, trainName, numberOfStorageCarts]
+   
+  wand:
+   description: Wand which is used for marking the train spawn locations
+   aliases: [wand, traintool]
+   permission: goldrushmc.train.wand
+   usage: <command>
+
+permissions:
+  goldrushmc.*:
+    description: Gives access to all commands to the plugin
+    children:
+      goldrushmc.train.create: true
+      goldrushmc.train.wand: true
+  goldrushmc.train.create:
+    description: Allows you to create trains
+    default: true
+
+  goldrushmc.train.wand:
+    description: Allows you to spawn the train wand
+    default: true

@@ -1,19 +1,21 @@
 package com.goldrushmc.bukkit.train;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.entity.Player;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
+import com.goldrushmc.bukkit.train.util.TrainTools;
+import com.goldrushmc.bukkit.train.util.TrainTools.TrainType;
 
 /**
  * <p>This class is in charge of facilitating the TrainCarts plugin.</p>
@@ -23,17 +25,15 @@ import com.bergerkiller.bukkit.tc.properties.TrainProperties;
  * @version 1.0
  */
 public class TrainFactory {
-	
-	private final JavaPlugin plugin;
-	
+
 	public static List<String> trainNames = new ArrayList<String>();
-	
-	public TrainFactory(JavaPlugin plugin) {
-		this.plugin = plugin;
-	}
-	
+
+	//Stores the player's rail selections
+	public static Map<Player, Location[]> selections = new HashMap<Player, Location[]>();
+
 	/**
 	 * <p>Use this to create new Standard Trains on the map.</p>
+	 * <p>This is configured so trains ALWAYS SPAWN RIGHT TO LEFT
 	 * 
 	 * <p><b>Standard trains have:</b></p>
 	 * <ol>
@@ -45,12 +45,16 @@ public class TrainFactory {
 	 * @param trainSpawn Location of where to spawn the train
 	 * @param nameOfTrain The name of the new train
 	 */
-	public static boolean newStandardTrain(Location trainSpawn, String nameOfTrain) {
+	public static void newStandardTrain(Player player, String nameOfTrain, String trainType) {
 
-		if(!isRail(trainSpawn.getBlock())) {
-			return false; //If not a rail, return false.
-		}
-		BlockFace direction = getDirection(trainSpawn.getYaw());
+		//Get the cardinal direction to the left of the player.
+		BlockFace leftDir = TrainTools.toTheLeft(TrainTools.getDirection(player));
+
+		Location[] locMap = selections.get(player);
+		Location trainSpawn = null;
+		if(locMap[0] == null && locMap[1] != null) trainSpawn = locMap[1];
+		else if(locMap[0] != null) trainSpawn = locMap[0];
+		if(!TrainTools.singleRailCheck(trainSpawn)) return;
 
 		//Specifying the cart types to be created. This is simply one of each.
 		List<EntityType> carts = new LinkedList<EntityType>();
@@ -58,17 +62,10 @@ public class TrainFactory {
 		carts.add(EntityType.MINECART_CHEST);
 		carts.add(EntityType.MINECART_FURNACE);
 
-		MinecartGroup mg = MinecartGroup.spawn(trainSpawn.getBlock(), direction, carts);
-		TrainProperties tp = TrainProperties.create();
-		tp.setName(nameOfTrain);
-		tp.setSpeedLimit(5.0);
-		tp.setPickup(false);
-		mg.setProperties(tp);
-		
-		trainNames.add(nameOfTrain);
-		
-		return true;
+		makeTrain(TrainType.getType(trainType), nameOfTrain, trainSpawn.getBlock(), leftDir, carts);
 	}
+
+
 
 	/**
 	 * Use this to create new Custom Trains on the map.
@@ -78,36 +75,44 @@ public class TrainFactory {
 	 * @param numOfPassengers The amount of passenger seats available.
 	 * @param numOfChests The amount of storage chests available.
 	 */
-	public static boolean newCustomTrain(Location trainSpawn, String nameOfTrain, int numOfPassengers, int numOfChests) {
+	public static void newCustomTrain(Player player, String nameOfTrain, String trainType, int numOfPassengers, int numOfChests) {
 
-		if(!isRail(trainSpawn.getBlock())) {
-			return false; //If not a rail, return false.
+		//Get the cardinal direction to the left of the player.
+		BlockFace leftDir = TrainTools.toTheLeft(TrainTools.getDirection(player));
+
+		Location[] locMap = selections.get(player);
+		Location trainSpawn = locMap[0];		
+
+		//Just makes sure the locations chosen are appropriate.
+		if(!TrainTools.singleRailCheck(trainSpawn)) return;
+
+		//		PathFinder pf = new PathFinder(trainSpawn.getBlock());
+
+		//Measure the distance between the two locations, to see how big they want the train.
+		int dist = TrainTools.getDistance(trainSpawn, locMap[1]);
+		player.sendMessage("The distance between your two points are: " + dist);
+
+		if(dist < (numOfPassengers + numOfChests)) {
+			player.sendMessage("There is not enough room to put a train here!");
+			player.sendMessage("----------------------------------------------");
+			player.sendMessage("As a standard rule of thumb, count the number of carts of the train, and add 4 to it.");
+			player.sendMessage("That is how much space is required.");
+			return;
 		}
-		
-		BlockFace direction = getDirection(trainSpawn.getYaw());
 
-		// Specifying the cart types to be created.
+		//Specifying the cart types to be created. This is simply one of each.
 		List<EntityType> carts = new LinkedList<EntityType>();
 		for(int i = 0; i < numOfPassengers; i++) {
-			carts.add(EntityType.MINECART);	
+			carts.add(EntityType.MINECART);
 		}
 		for(int i = 0; i < numOfChests; i++) {
-			carts.add(EntityType.MINECART_CHEST);	
+			carts.add(EntityType.MINECART_CHEST);
 		}
 		carts.add(EntityType.MINECART_FURNACE);
 
-		//Creates the minecart group (in theory).
-		MinecartGroup mg = MinecartGroup.spawn(trainSpawn.getBlock(), direction, carts);
-		TrainProperties tp = TrainProperties.create();
-		tp.setName(nameOfTrain);
-		tp.setSpeedLimit(5.0);
-		tp.setPickup(false);
-		mg.setProperties(tp);
-		
-		trainNames.add(nameOfTrain);
-		return true;
+		makeTrain(TrainType.getType(trainType), nameOfTrain, trainSpawn.getBlock(), leftDir, carts);
 	}
-	
+
 	/**
 	 *  Use this to create new Passenger Trains on the map.
 	 *  
@@ -116,32 +121,43 @@ public class TrainFactory {
 	 * @param numOfPassengers The amount of passenger seats available
 	 * @return
 	 */
-	public static boolean newPassengerTrain(Location trainSpawn, String nameOfTrain, int numOfPassengers) {
-		if(!isRail(trainSpawn.getBlock())) {
-			return false; //If not a rail, return false.
-		}
-		
-		BlockFace direction = getDirection(trainSpawn.getYaw());
+	public static void newPassengerTrain(Player player, String nameOfTrain, String trainType, int numOfPassengers) {
 
-		// Specifying the cart types to be created.
+		//Get the cardinal direction to the left of the player.
+		BlockFace leftDir = TrainTools.toTheLeft(TrainTools.getDirection(player));
+
+		Location[] locMap = selections.get(player);
+		Location trainSpawn = locMap[0];		
+
+		//Just makes sure the locations chosen are appropriate.
+		if(!TrainTools.singleRailCheck(trainSpawn)) return;
+
+		//		PathFinder pf = new PathFinder(trainSpawn.getBlock());
+
+		//Measure the distance between the two locations, to see how big they want the train.
+		int dist = TrainTools.getDistance(trainSpawn, locMap[1]);
+		player.sendMessage("The distance between your two points are: " + dist);
+
+
+		if(dist < numOfPassengers) {
+			player.sendMessage("There is not enough room to put a train here!");
+			player.sendMessage("----------------------------------------------");
+			player.sendMessage("As a standard rule of thumb, count the number of carts of the train, and add 4 to it.");
+			player.sendMessage("That is how much space is required.");
+			return;
+		}
+
+		//Specifying the cart types to be created. This is simply one of each.
 		List<EntityType> carts = new LinkedList<EntityType>();
 		for(int i = 0; i < numOfPassengers; i++) {
-			carts.add(EntityType.MINECART);	
+			carts.add(EntityType.MINECART);
 		}
+		
 		carts.add(EntityType.MINECART_FURNACE);
 
-		//Creates the minecart group (in theory).
-		MinecartGroup mg = MinecartGroup.spawn(trainSpawn.getBlock(), direction, carts);
-		TrainProperties tp = TrainProperties.create();
-		tp.setName(nameOfTrain);
-		tp.setSpeedLimit(5.0);
-		tp.setPickup(false);
-		mg.setProperties(tp);
-		
-		trainNames.add(nameOfTrain);
-		return true;
+		makeTrain(TrainType.getType(trainType), nameOfTrain, trainSpawn.getBlock(), leftDir, carts);
 	}
-	
+
 	/**
 	 * Use this to create new Storage Trains on the map.
 	 * 
@@ -149,75 +165,80 @@ public class TrainFactory {
 	 * @param nameOfTrain The name of the new train.
 	 * @param numOfChests The amount of storage chests available.
 	 */
-	public static boolean newStorageTrain(Location trainSpawn, String nameOfTrain, int numOfChests) {
-		if(!isRail(trainSpawn.getBlock())) {
-			return false; //If not a rail, return false.
-		}
-		
-		BlockFace direction = getDirection(trainSpawn.getYaw());
+	public static void newStorageTrain(Player player, String nameOfTrain, String trainType, int numOfChests) {
+		//Get the cardinal direction to the left of the player.
+		BlockFace leftDir = TrainTools.toTheLeft(TrainTools.getDirection(player));
 
-		// Specifying the cart types to be created.
+		Location[] locMap = selections.get(player);
+		Location trainSpawn = locMap[0];		
+
+		//Just makes sure the locations chosen are appropriate.
+		if(!TrainTools.singleRailCheck(trainSpawn)) return;
+
+		//		PathFinder pf = new PathFinder(trainSpawn.getBlock());
+
+		//Measure the distance between the two locations, to see how big they want the train.
+		int dist = TrainTools.getDistance(trainSpawn, locMap[1]);
+		player.sendMessage("The distance between your two points are: " + dist);
+
+		if(dist < numOfChests) {
+			player.sendMessage("There is not enough room to put a train here!");
+			player.sendMessage("----------------------------------------------");
+			player.sendMessage("As a standard rule of thumb, count the number of carts of the train, and add 4 to it.");
+			player.sendMessage("That is how much space is required.");
+			return;
+		}
+
+		//Specifying the cart types to be created. This is simply one of each.
 		List<EntityType> carts = new LinkedList<EntityType>();
 		for(int i = 0; i < numOfChests; i++) {
-			carts.add(EntityType.MINECART);	
+			carts.add(EntityType.MINECART_CHEST);
 		}
 		carts.add(EntityType.MINECART_FURNACE);
-
-		//Creates the minecart group (in theory).
-		MinecartGroup mg = MinecartGroup.spawn(trainSpawn.getBlock(), direction, carts);
-		TrainProperties tp = TrainProperties.create();
-		tp.setName(nameOfTrain);
-		tp.setSpeedLimit(5.0);
-		tp.setPickup(false);
-		mg.setProperties(tp);
 		
+		makeTrain(TrainType.getType(trainType), nameOfTrain, trainSpawn.getBlock(), leftDir, carts);
+	}
+
+	private static void makePublicTrain(String nameOfTrain, Block b, BlockFace face, List<EntityType> carts) {
+		//Add carts to a group to link them
+		MinecartGroup mg = MinecartGroup.spawn(b, face, carts);
+		TrainProperties tp = TrainProperties.create();
+
+		//Properties of a Public Transportation Train
+		tp.setName(nameOfTrain);
+		tp.setSpeedLimit(1.0);
+		tp.setPickup(false);
+		tp.setKeepChunksLoaded(true);
+		mg.setProperties(tp);
+
 		trainNames.add(nameOfTrain);
-		return true;
+
 	}
 
-	/**
-	 * Gets the BlockFace direction, based on the Yaw
-	 * 
-	 * @param yaw The direction in {@code double} form, to be translated
-	 * @return The BlockFace direction
-	 */
-	private static BlockFace getDirection(double yaw) {
-		if (0 <= yaw && yaw < 22.5) {
-			return BlockFace.NORTH;
-		} else if (22.5 <= yaw && yaw < 67.5) {
-			return BlockFace.NORTH_EAST;
-		} else if (67.5 <= yaw && yaw < 112.5) {
-			return BlockFace.EAST;
-		} else if (112.5 <= yaw && yaw < 157.5) {
-			return BlockFace.SOUTH_EAST;
-		} else if (157.5 <= yaw && yaw < 202.5) {
-			return BlockFace.SOUTH;
-		} else if (202.5 <= yaw && yaw < 247.5) {
-			return BlockFace.SOUTH_WEST;
-		} else if (247.5 <= yaw && yaw < 292.5) {
-			return BlockFace.WEST;
-		} else if (292.5 <= yaw && yaw < 337.5) {
-			return BlockFace.NORTH_WEST;
-		} else if (337.5 <= yaw && yaw < 360.0) {
-			return BlockFace.NORTH;
-		} else {
-			return null;
-		}
-	}
+	private static void makeTownTrain(String nameOfTrain, Block b, BlockFace face, List<EntityType> carts) {
+		//Add carts to a group to link them
+		MinecartGroup mg = MinecartGroup.spawn(b, face, carts);
+		TrainProperties tp = TrainProperties.create();
 
-	/**
-	 * Checks whether or not the block is a rail block.
-	 * 
-	 * @param block The block in question.
-	 * @return true if it is a rail, false otherwise.
-	 */
-	private static boolean isRail(Block block) {
-		return block.getType() == Material.RAILS || block.getType() == Material.POWERED_RAIL || block.getType() == Material.ACTIVATOR_RAIL;
+		//Properties of a Town Train
+		tp.setName(nameOfTrain);
+		tp.setSpeedLimit(2.0);
+		tp.setPickup(false);
+		tp.setKeepChunksLoaded(true);
+		tp.setManualMovementAllowed(false);
+		tp.setPlayerTakeable(false);
+		mg.setProperties(tp);
+
+		trainNames.add(nameOfTrain);
 	}
 	
-	public boolean loadTrains() {
-		List<Map<?,?>> existing = plugin.getConfig().getMapList("trains");
-		
-		return false;
+	private static void makeTrain(TrainType trainType, String trainName, Block b, BlockFace face, List<EntityType> carts) {
+		switch(trainType) {
+		case PRIVATE: break;
+		case PUBLIC: makePublicTrain(trainName, b, face, carts); break;
+		case TOWN: makeTownTrain(trainName, b, face, carts);	break;
+		case TRANSPORT: break;
+		default: break;
+		}
 	}
 }

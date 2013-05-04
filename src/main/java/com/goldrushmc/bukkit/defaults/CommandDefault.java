@@ -15,4 +15,14 @@ public abstract class CommandDefault implements CommandExecutor {
 
 	@Override
 	public abstract boolean onCommand(CommandSender sender, Command cmd, String label, String[] args);
+	
+	public boolean isInt(String num) {
+		try {
+			@SuppressWarnings("unused")
+			int i = Integer.valueOf(num);
+		} catch (NumberFormatException e) {
+			return false;
+		}
+		return true;
+	}
 }
