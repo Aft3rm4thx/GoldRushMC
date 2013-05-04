@@ -7,35 +7,6 @@
 	<name>GoldRushMC</name>
 	<description>A Plugin created to facilitate the Minecraft Server "Gold Rush".</description>
 
-	<profiles>
-		<profile>
-			<id>output</id>
-			<build>
-				<directory>B:/Bukkit_TestPlugin/plugins</directory>
-				<defaultGoal>clean install</defaultGoal>
-				<resources>
-					<resource>
-						<directory>E:\.m2\repository\com\bergerkiller\bukkit\TrainCarts\1.72.7</directory>
-						<targetPath>B:/Bukkit_TestPlugin/plugins</targetPath>
-						<includes>
-							<include>*.jar</include>
-						</includes>
-					</resource>
-					<resource>
-						<directory>E:\.m2\repository\com\bergerkiller\bukkit\BKCommonLib\1.52-SNAPSHOT</directory>
-						<targetPath>B:/Bukkit_TestPlugin/plugins</targetPath>
-						<includes>
-							<include>*.jar</include>
-						</includes>
-					</resource>
-					<resource>
-						<directory></directory>
-					</resource>
-				</resources>
-			</build>
-		</profile>
-	</profiles>
-
 	<repositories>
 		<repository>
 			<id>bukkit-repo</id>
