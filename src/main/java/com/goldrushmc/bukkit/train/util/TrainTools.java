@@ -4,11 +4,20 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 
 import com.goldrushmc.bukkit.train.SmallBlockMap;
 
 public class TrainTools {
+	
+	public static EntityType getTrainType(String trainType) {
+		switch(trainType) {
+		case "ride": return EntityType.MINECART;
+		case "store": return EntityType.MINECART_CHEST;
+		default: return null;
+		}
+	}
 	
 	/**
 	 * Gets the BlockFace direction, based on the Yaw

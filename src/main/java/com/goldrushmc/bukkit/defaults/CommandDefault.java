@@ -25,4 +25,15 @@ public abstract class CommandDefault implements CommandExecutor {
 		}
 		return true;
 	}
+	
+	public boolean isDouble(String num) {
+		try {
+			@SuppressWarnings("unused")
+			double i = Double.valueOf(num);
+		} catch (NumberFormatException e) {
+			return false;
+		}
+		return true;
+	}
+
 }

@@ -1,5 +1,5 @@
-name: Gold Rush MC
-version: 1.0
+name: GoldRushMC
+version: 1.1
 description: The plugin created to facilitate the Gold Rush Server Features
 author: Diremonsoon, lexwebb
 #website: http://forums.bukkit.org/threads/ GET NEW WEBSITE ADDRESS AND APPEND
@@ -21,8 +21,14 @@ commands:
    description: Wand which is used for marking the train spawn locations
    aliases: [wand, traintool]
    permission: goldrushmc.train.wand
-   usage: <command>
+   usage: /<command>
 
+  cart:
+   description: 
+   aliases: [cart, addcart, c]
+   permission: goldrushmc.train.add
+   usage: /<command> [trainName, typeOfCart]
+ 
 permissions:
   goldrushmc.*:
     description: Gives access to all commands to the plugin

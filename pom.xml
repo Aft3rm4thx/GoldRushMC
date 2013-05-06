@@ -18,7 +18,7 @@
 		</repository>
 		<repository>
 			<id>citizensapi</id>
-			<url>http://ci.citizensnpcs.com/job/CitizensAPI/lastBuild/maven-repository/repository/</url>
+			<url>http://ci.citizensnpcs.com/plugin/repository/everything/</url>
 		</repository>
 	</repositories>
 
