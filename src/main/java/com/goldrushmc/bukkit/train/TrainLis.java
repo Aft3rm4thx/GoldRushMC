@@ -5,6 +5,7 @@ import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -19,6 +20,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
+import com.bergerkiller.bukkit.tc.controller.MinecartMember;
+import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
+import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.events.GroupLinkEvent;
 import com.bergerkiller.bukkit.tc.events.GroupRemoveEvent;
 import com.bergerkiller.bukkit.tc.events.MemberRemoveEvent;
@@ -53,20 +57,68 @@ public class TrainLis extends DefaultListener {
 		}
 	}
 
-	@EventHandler(priority = EventPriority.MONITOR)
-	public void onGroupBreak(GroupRemoveEvent event) {
 
+//	@EventHandler(priority = EventPriority.MONITOR)
+	public void onGroupBreak(GroupRemoveEvent event) {
+		MinecartGroup mg = event.getGroup();
 		String train = event.getGroup().getProperties().getTrainName();
 		if(TrainFactory.trains.containsKey(train)) {
 			TrainFactory.trains.remove(train);
 		}
+
+		for(MinecartMember<?> mm : mg) {			
+			//Determine class type, and try to remove the minecart or inventory from the appropriate list.
+			try {
+				MinecartMemberRideable mmr = (MinecartMemberRideable) mm;
+				for(List<MinecartMemberRideable> m : TrainFactory.ownerRideable.values()) {
+					if(m.contains(mmr)) {
+						m.remove(mmr);
+						return;
+					}
+				}
+			} catch (ClassCastException e) {
+				try {
+					MinecartMemberChest mmc = (MinecartMemberChest) mm;
+					Inventory inv = mmc.getEntity().getInventory();
+					for(List<Inventory> list : TrainFactory.ownerList.values()) {
+						if(list.contains(inv)) {
+							list.remove(inv);
+							return;
+						}
+					}
+				} catch (ClassCastException c) {}
+			}
+		}
 	}
 
-	@EventHandler(priority = EventPriority.MONITOR)
+//	@EventHandler(priority = EventPriority.MONITOR)
 	public void onCartBreak(MemberRemoveEvent event) {
+		MinecartMember<?> mm = event.getMember();
 		String train = event.getGroup().getProperties().getTrainName();
 		if(TrainFactory.trains.containsKey(train)) {
 			TrainFactory.trains.remove(train);
+		}
+
+		//Determine class type, and try to remove the minecart or inventory from the appropriate list.
+		try {
+			MinecartMemberRideable mmr = (MinecartMemberRideable) mm;
+			for(List<MinecartMemberRideable> m : TrainFactory.ownerRideable.values()) {
+				if(m.contains(mmr)) {
+					m.remove(mmr);
+					return;
+				}
+			}
+		} catch (ClassCastException e) {
+			try {
+				MinecartMemberChest mmc = (MinecartMemberChest) mm;
+				Inventory inv = mmc.getEntity().getInventory();
+				for(List<Inventory> list : TrainFactory.ownerList.values()) {
+					if(list.contains(inv)) {
+						list.remove(inv);
+						return;
+					}
+				}
+			} catch (ClassCastException c) {}
 		}
 	}
 
@@ -83,7 +135,7 @@ public class TrainLis extends DefaultListener {
 		if(block == null) return;		
 		//If the block type is a rail, we pass it to the method in charge of rail clicking.
 		if(TrainTools.isRail(block)) onRailClick(event);
-		if(block.equals(Material.SIGN)) onSignClick(event);
+		if(block.getType().equals(Material.WALL_SIGN) || block.getType().equals(Material.SIGN) || block.getType().equals(Material.SIGN_POST)) onSignClick(event);
 	}
 
 	/**
@@ -146,7 +198,11 @@ public class TrainLis extends DefaultListener {
 
 	@EventHandler
 	public void onRailBreak(BlockBreakEvent event) {
+		try {
 		if(event.getPlayer().getItemInHand().getItemMeta().getLore().contains("TrainTool")) event.setCancelled(true);
+		} catch (NullPointerException e) {
+			return;
+		}
 	}
 
 	/**
@@ -156,30 +212,43 @@ public class TrainLis extends DefaultListener {
 	 */
 	public void onSignClick(PlayerInteractEvent event) {
 
-		Sign sign = (Sign) event.getClickedBlock();
+		BlockState bs = event.getClickedBlock().getState();
+		
+		Sign sign = (Sign) bs;
+		
 		Player player = event.getPlayer();
-//		PlayerInventory ip = player.getInventory();
-//		ItemStack[] items = ip.getContents();		
+		//		PlayerInventory ip = player.getInventory();
+		//		ItemStack[] items = ip.getContents();		
 		String[] lines = sign.getLines();
 
 		if(lines.length != 4) return;
+		
+		player.sendMessage("You clicked on a sign!");
+		player.sendMessage("The top line is: " + lines[0]);
+		player.sendMessage("The next line is: " + lines[1]);
 
 
 		//TODO Incomplete logic! Need to add in the economy stuffs.
 		if(lines[0].equals("{trains}")) {
+			//Make sure that the train exists in our map system.
 			if(TrainFactory.trains.containsKey(lines[2])) {
 
 				if(lines[1].equalsIgnoreCase("buy_storage")) {
+					player.sendMessage("You bought a cart for storage!");
 					TrainFactory.addCart(player, lines[2], EntityType.MINECART_CHEST);
+					bs.update();
 				}
 				else if(lines[1].equalsIgnoreCase("buy_ride")) {
 					TrainFactory.addCart(player, lines[2], EntityType.MINECART);
+					bs.update();
 				}
 				else if(lines[1].equalsIgnoreCase("sell_storage")) {
 					TrainFactory.removeCart(lines[2], player, EntityType.MINECART_CHEST);
+					bs.update();
 				}
 				else if(lines[1].equalsIgnoreCase("sell_ride")) { 
 					TrainFactory.removeCart(lines[2], player, EntityType.MINECART);
+					bs.update();
 				}
 			}
 		}

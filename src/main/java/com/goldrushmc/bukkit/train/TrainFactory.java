@@ -71,9 +71,10 @@ public class TrainFactory {
 
 		//Specifying the cart types to be created. This is simply one of each.
 		List<EntityType> carts = new LinkedList<EntityType>();
+		carts.add(EntityType.MINECART_FURNACE);
 		carts.add(EntityType.MINECART);
 		carts.add(EntityType.MINECART_CHEST);
-		carts.add(EntityType.MINECART_FURNACE);
+
 
 		makeTrain(TrainType.getType(trainType), nameOfTrain, trainSpawn.getBlock(), leftDir, carts, speedLimit);
 	}
@@ -356,8 +357,6 @@ public class TrainFactory {
 		else {
 			ownerList.get(owner).add(toAdd);
 		}
-
-
 	}
 
 	/**
@@ -415,7 +414,8 @@ public class TrainFactory {
 					
 					if(rideCart == toRemove) {
 						ownerList.get(owner).remove(cart);
-						train.remove(cart);
+						train.removeSilent(cart);
+						train.respawn();
 						break;
 					}
 				} catch (ClassCastException e) {}

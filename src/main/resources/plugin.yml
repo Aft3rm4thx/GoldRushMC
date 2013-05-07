@@ -12,10 +12,11 @@ commands:
    aliases: [train]
    permission: goldrushmc.train.create
    usage: |
-           /<command> [Standard, trainName]
-           /<command> [Custom, trainName, numberOfPassengers, numberOfChestCarts]
-           /<command> [Passenger, trainName, numberOfPassengers]
-           /<command> [Storage, trainName, numberOfStorageCarts]
+           Two types of train: Public or Standard
+           /<command> [Standard, trainName, trainType, speedLimit]
+           /<command> [Custom, trainName, trainType, numberOfPassengers, numberOfChestCarts, speedLimit]
+           /<command> [Passenger, trainName, trainType, numberOfPassengers, speedLimit]
+           /<command> [Storage, trainName, trainType, numberOfStorageCarts, speedLimit]
    
   wand:
    description: Wand which is used for marking the train spawn locations
