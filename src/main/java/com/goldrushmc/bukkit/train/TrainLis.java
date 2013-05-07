@@ -155,20 +155,20 @@ public class TrainLis extends DefaultListener {
 	 * @param event The {@link Sign} click.
 	 */
 	public void onSignClick(PlayerInteractEvent event) {
-	
+
 		Sign sign = (Sign) event.getClickedBlock();
 		Player player = event.getPlayer();
 //		PlayerInventory ip = player.getInventory();
 //		ItemStack[] items = ip.getContents();		
 		String[] lines = sign.getLines();
-		
+
 		if(lines.length != 4) return;
-		
-		
+
+
 		//TODO Incomplete logic! Need to add in the economy stuffs.
 		if(lines[0].equals("{trains}")) {
 			if(TrainFactory.trains.containsKey(lines[2])) {
-				
+
 				if(lines[1].equalsIgnoreCase("buy_storage")) {
 					TrainFactory.addCart(player, lines[2], EntityType.MINECART_CHEST);
 				}
@@ -191,7 +191,7 @@ public class TrainLis extends DefaultListener {
 
 		Player p = (Player) event.getPlayer();
 		Inventory i = event.getInventory();
-		
+
 		if(TrainFactory.ownerList.containsKey(p)) {
 			for(Inventory list : TrainFactory.ownerList.get(p)) {
 				if(list == i) {
@@ -200,8 +200,8 @@ public class TrainLis extends DefaultListener {
 				}
 			}
 		}
-		
-		
+
+
 	}
 
 }

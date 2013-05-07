@@ -368,20 +368,6 @@ public class TrainFactory {
 	 */
 	public static void removeCart(String trainName, Player owner, EntityType cartType) {
 
-		
-		if(cartType.equals(EntityType.MINECART_CHEST)) {
-			List<Inventory> listOf = ownerList.get(owner);
-			Inventory toRemove = null;
-			if(listOf != null) {
-				toRemove = listOf.get(listOf.size() - 1);
-			}
-			if(toRemove == null) return;	
-		}
-		else if(cartType.equals(EntityType.MINECART)) {
-			
-		}
-		
-		
 		//Iterate through the groups already created, and find the one requested.
 		MinecartGroup train = null;
 		MinecartGroup[] groups = MinecartGroup.getGroups();
@@ -392,49 +378,50 @@ public class TrainFactory {
 			}
 		}
 		
-		
-		
-		
-		//Need this to ride up through the levels of the loop!
-		boolean end = false;
-
-
-
-		//For each member of the train...
-		for(MinecartMember<?> cart : train) {
-			if(cartType.equals(EntityType.MINECART_CHEST)) {
-				//Try to cast to a Chest Minecart type
+		//Determine what we want to delete
+		List<?> listOf = null;
+		if(cartType.equals(EntityType.MINECART_CHEST)) {
+			listOf = ownerList.get(owner);
+			Inventory toRemove = null;
+			if(listOf != null) {
+				toRemove = (Inventory) listOf.get(listOf.size());
+			}
+			if(toRemove == null) return;
+			
+			for(MinecartMember<?> cart : train) {
 				try {
-					MinecartMemberChest mmc = (MinecartMemberChest) cart;
-					//Get the inventory if it works
-					Inventory inv = mmc.getEntity().getInventory();
-					// Iterate through the Map, in an indirect way, as to obtain the owner through the inventory.
-					for(Player owner2 : ownerList.keySet()) {
-						for(Inventory inventory : ownerList.get(owner2)) {
-							if(inventory == inv) {
-								train.remove(cart.getIndex());
-								train.respawn();
-								ownerList.remove(owner2);
-								end = true;
-								break;
-							}
-						}
+					MinecartMemberChest mc = (MinecartMemberChest) cart;
+					Inventory invCart = mc.getEntity().getInventory();
+					
+					if(invCart == toRemove) {
+						ownerList.get(owner).remove(cart);
+						train.remove(cart);
+						break;
 					}
-				} catch (Exception e){}
-				if(end) break;
+				} catch (ClassCastException e) {}
 			}
-			else if(cartType.equals(EntityType.MINECART)) {
-				//Determine ownership
-				if(ownerRideable.containsKey(owner)) {
-					if(ownerRideable.get(owner).contains(cart)) {
-						ownerRideable.get(owner).remove(cart);
-						train.remove(cart.getIndex());
-
-					}
-				}
-			}
-			if(end) break;
 		}
+		else if(cartType.equals(EntityType.MINECART)) {
+			listOf = ownerRideable.get(owner);
+			MinecartMemberRideable toRemove = null;
+			if(listOf != null) {
+				toRemove = (MinecartMemberRideable) listOf.get(listOf.size());
+			}
+			if(toRemove == null) return;
+			
+			for(MinecartMember<?> cart : train) {
+				try {
+					MinecartMemberRideable rideCart = (MinecartMemberRideable) cart;
+					
+					if(rideCart == toRemove) {
+						ownerList.get(owner).remove(cart);
+						train.remove(cart);
+						break;
+					}
+				} catch (ClassCastException e) {}
+			}
+		}
+		
 	}
 
 	/**
