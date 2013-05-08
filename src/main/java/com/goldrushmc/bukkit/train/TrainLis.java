@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -38,6 +39,29 @@ public class TrainLis extends DefaultListener {
 		super(plugin);
 	}
 
+	public void onMinecartChestInventory(InventoryMoveItemEvent e) {
+		Inventory inv = e.getInitiator();
+
+		//This simulataneously figures out if it is a minecart inventory, and the owner of that inventory.
+		Player p = TrainFactory.findOwnerByInv(inv);
+
+		//if we have no owner, then get the opposite inventory, in hopes that it will be a minecart owned inventory.
+		Inventory toUse = null;
+		if(p == null) {
+			Inventory source = e.getSource(), dest = e.getDestination();
+			if(inv == source) {
+				toUse = dest;
+			}
+			else {
+				toUse = source;
+			}
+			//It is safe to assume at this point that this inventory is indeed part of an owned minecart, so we proceed.
+		} else {
+			toUse = inv;
+		}
+		
+	}
+
 	/**
 	 * Checks to make sure that the groups connecting are of the same train, and if they aren't, cancel the event.
 	 * 
@@ -58,7 +82,7 @@ public class TrainLis extends DefaultListener {
 	}
 
 
-//	@EventHandler(priority = EventPriority.MONITOR)
+	//	@EventHandler(priority = EventPriority.MONITOR)
 	public void onGroupBreak(GroupRemoveEvent event) {
 		MinecartGroup mg = event.getGroup();
 		String train = event.getGroup().getProperties().getTrainName();
@@ -79,10 +103,9 @@ public class TrainLis extends DefaultListener {
 			} catch (ClassCastException e) {
 				try {
 					MinecartMemberChest mmc = (MinecartMemberChest) mm;
-					Inventory inv = mmc.getEntity().getInventory();
-					for(List<Inventory> list : TrainFactory.ownerList.values()) {
-						if(list.contains(inv)) {
-							list.remove(inv);
+					for(List<MinecartMemberChest> list : TrainFactory.ownerList.values()) {
+						if(list.contains(mmc)) {
+							list.remove(mmc);
 							return;
 						}
 					}
@@ -91,7 +114,7 @@ public class TrainLis extends DefaultListener {
 		}
 	}
 
-//	@EventHandler(priority = EventPriority.MONITOR)
+	//	@EventHandler(priority = EventPriority.MONITOR)
 	public void onCartBreak(MemberRemoveEvent event) {
 		MinecartMember<?> mm = event.getMember();
 		String train = event.getGroup().getProperties().getTrainName();
@@ -111,10 +134,9 @@ public class TrainLis extends DefaultListener {
 		} catch (ClassCastException e) {
 			try {
 				MinecartMemberChest mmc = (MinecartMemberChest) mm;
-				Inventory inv = mmc.getEntity().getInventory();
-				for(List<Inventory> list : TrainFactory.ownerList.values()) {
-					if(list.contains(inv)) {
-						list.remove(inv);
+				for(List<MinecartMemberChest> list : TrainFactory.ownerList.values()) {
+					if(list.contains(mmc)) {
+						list.remove(mmc);
 						return;
 					}
 				}
@@ -199,7 +221,7 @@ public class TrainLis extends DefaultListener {
 	@EventHandler
 	public void onRailBreak(BlockBreakEvent event) {
 		try {
-		if(event.getPlayer().getItemInHand().getItemMeta().getLore().contains("TrainTool")) event.setCancelled(true);
+			if(event.getPlayer().getItemInHand().getItemMeta().getLore().contains("TrainTool")) event.setCancelled(true);
 		} catch (NullPointerException e) {
 			return;
 		}
@@ -213,20 +235,15 @@ public class TrainLis extends DefaultListener {
 	public void onSignClick(PlayerInteractEvent event) {
 
 		BlockState bs = event.getClickedBlock().getState();
-		
+
 		Sign sign = (Sign) bs;
-		
+
 		Player player = event.getPlayer();
 		//		PlayerInventory ip = player.getInventory();
 		//		ItemStack[] items = ip.getContents();		
 		String[] lines = sign.getLines();
 
 		if(lines.length != 4) return;
-		
-		player.sendMessage("You clicked on a sign!");
-		player.sendMessage("The top line is: " + lines[0]);
-		player.sendMessage("The next line is: " + lines[1]);
-
 
 		//TODO Incomplete logic! Need to add in the economy stuffs.
 		if(lines[0].equals("{trains}")) {
@@ -236,19 +253,18 @@ public class TrainLis extends DefaultListener {
 				if(lines[1].equalsIgnoreCase("buy_storage")) {
 					player.sendMessage("You bought a cart for storage!");
 					TrainFactory.addCart(player, lines[2], EntityType.MINECART_CHEST);
-					bs.update();
 				}
 				else if(lines[1].equalsIgnoreCase("buy_ride")) {
+					player.sendMessage("You bought a cart for riding!");
 					TrainFactory.addCart(player, lines[2], EntityType.MINECART);
-					bs.update();
 				}
 				else if(lines[1].equalsIgnoreCase("sell_storage")) {
+					player.sendMessage("You sold your cart for storage!");
 					TrainFactory.removeCart(lines[2], player, EntityType.MINECART_CHEST);
-					bs.update();
 				}
-				else if(lines[1].equalsIgnoreCase("sell_ride")) { 
+				else if(lines[1].equalsIgnoreCase("sell_ride")) {
+					player.sendMessage("You sold your cart for riding!");
 					TrainFactory.removeCart(lines[2], player, EntityType.MINECART);
-					bs.update();
 				}
 			}
 		}
@@ -262,15 +278,12 @@ public class TrainLis extends DefaultListener {
 		Inventory i = event.getInventory();
 
 		if(TrainFactory.ownerList.containsKey(p)) {
-			for(Inventory list : TrainFactory.ownerList.get(p)) {
-				if(list == i) {
+			for(MinecartMemberChest chest : TrainFactory.getInventoryList(p)) {
+				if(chest.getEntity().getInventory() == i) {
 					event.setCancelled(false);
 					break;
 				}
 			}
 		}
-
-
 	}
-
 }

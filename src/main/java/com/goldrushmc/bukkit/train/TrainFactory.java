@@ -35,7 +35,7 @@ public class TrainFactory {
 	public static Map<String, MinecartGroup> trains = new HashMap<String, MinecartGroup>();
 
 	//References the owners to a list of minecarts they own.
-	public static Map<Player, List<Inventory>> ownerList = new HashMap<Player, List<Inventory>>();
+	public static Map<Player, List<MinecartMemberChest>> ownerList = new HashMap<Player, List<MinecartMemberChest>>();
 	public static Map<Player, List<MinecartMemberRideable>> ownerRideable = new HashMap<Player, List<MinecartMemberRideable>>();
 
 	//Stores the player's rail selections
@@ -345,18 +345,33 @@ public class TrainFactory {
 		//Link the new minecart to the train.
 		MinecartGroup.link(m1, m2);
 
-		//Add the owner and cart to the ownerList.
-		Inventory toAdd = mg.getInventory();
-		//If they are not there, initialize a list and put the first inventory on there.
-		if(!ownerList.containsKey(owner)) {
-			List<Inventory>	addThis = new ArrayList<Inventory>();
-			addThis.add(toAdd);
-			ownerList.put(owner, addThis);
+		//Add the owner and cart to the ownerList. Need to cast in order to get proper functionality....
+		
+		
+		if(m2.getClass().isInstance(new MinecartMemberChest())) {
+			//If they are not there, initialize a list and put the first cart in there.
+			if(!ownerList.containsKey(owner)) {
+				List<MinecartMemberChest>	addThis = new ArrayList<MinecartMemberChest>();
+				addThis.add((MinecartMemberChest) m2);
+				ownerList.put(owner, addThis);
+			}
+			//Otherwise, just add this cart to their list.
+			else {
+				ownerList.get(owner).add((MinecartMemberChest) m2);
+			}
+		} else {
+			//If they are not there, initialize a list and put the first cart in there.
+			if(!ownerRideable.containsKey(owner)) {
+				List<MinecartMemberRideable> addThis = new ArrayList<MinecartMemberRideable>();
+				addThis.add((MinecartMemberRideable) m2);
+				ownerRideable.put(owner, addThis);
+			}
+			//Otherwise, just add this cart to their list.
+			else {
+				ownerRideable.get(owner).add((MinecartMemberRideable) m2);
+			}
 		}
-		//Otherwise, just add this inventory to their list.
-		else {
-			ownerList.get(owner).add(toAdd);
-		}
+
 	}
 
 	/**
@@ -376,25 +391,27 @@ public class TrainFactory {
 				break;
 			}
 		}
-		
+
 		//Determine what we want to delete
 		List<?> listOf = null;
 		if(cartType.equals(EntityType.MINECART_CHEST)) {
 			listOf = ownerList.get(owner);
-			Inventory toRemove = null;
+			MinecartMemberChest toRemove = null;
 			if(listOf != null) {
-				toRemove = (Inventory) listOf.get(listOf.size());
+				int i = listOf.size() - 1;
+				if(i == -1) return;
+				toRemove = (MinecartMemberChest) listOf.get(i);
 			}
 			if(toRemove == null) return;
-			
+
 			for(MinecartMember<?> cart : train) {
 				try {
-					MinecartMemberChest mc = (MinecartMemberChest) cart;
-					Inventory invCart = mc.getEntity().getInventory();
-					
-					if(invCart == toRemove) {
-						ownerList.get(owner).remove(cart);
+					MinecartMemberChest chestCart = (MinecartMemberChest) cart;
+
+					if(chestCart == toRemove) {
+						ownerList.get(owner).remove(chestCart);
 						train.remove(cart);
+						cart.getGroup().destroy();
 						break;
 					}
 				} catch (ClassCastException e) {}
@@ -404,24 +421,56 @@ public class TrainFactory {
 			listOf = ownerRideable.get(owner);
 			MinecartMemberRideable toRemove = null;
 			if(listOf != null) {
-				toRemove = (MinecartMemberRideable) listOf.get(listOf.size());
+				int i = listOf.size() - 1;
+				if(i == -1) return;
+				toRemove = (MinecartMemberRideable) listOf.get(i);
 			}
 			if(toRemove == null) return;
-			
+
 			for(MinecartMember<?> cart : train) {
 				try {
 					MinecartMemberRideable rideCart = (MinecartMemberRideable) cart;
-					
+
 					if(rideCart == toRemove) {
-						ownerList.get(owner).remove(cart);
-						train.removeSilent(cart);
-						train.respawn();
+						ownerRideable.get(owner).remove(rideCart);
+						train.remove(cart);
+						cart.getGroup().destroy();
 						break;
 					}
 				} catch (ClassCastException e) {}
 			}
 		}
-		
+	}
+
+	/**
+	 * Finds the owner of the inventory through a backwards process.
+	 * 
+	 * @param inv The inventory in question.
+	 * @return The owner of the inventory.
+	 */
+	public static Player findOwnerByInv(Inventory inv) {
+		for(Player p : ownerList.keySet()) {
+			if(ownerList.get(p).contains(inv)) {
+				return p;
+			}
+		}
+		return null;
+	}
+
+	public static List<MinecartMemberChest> getInventoryList(Player p) {
+		return ownerList.get(p);
+	}
+
+	public static List<MinecartMemberRideable> getRideList(Player p) {
+		return ownerRideable.get(p);
+	}
+
+	public static boolean hasInvList(Player p) {
+		return ownerList.containsKey(p);
+	}
+
+	public static boolean hasRideList(Player p) {
+		return ownerRideable.containsKey(p);
 	}
 
 	/**
