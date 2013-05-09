@@ -28,17 +28,19 @@ import com.bergerkiller.bukkit.tc.events.GroupLinkEvent;
 import com.bergerkiller.bukkit.tc.events.GroupRemoveEvent;
 import com.bergerkiller.bukkit.tc.events.MemberRemoveEvent;
 import com.goldrushmc.bukkit.defaults.DefaultListener;
-import com.goldrushmc.bukkit.train.signs.SignLogic;
 import com.goldrushmc.bukkit.train.util.TrainTools;
 
 public class TrainLis extends DefaultListener {
-
-	public SignLogic sl;
 
 	public TrainLis(JavaPlugin plugin) {
 		super(plugin);
 	}
 
+	/**
+	 * This will facilitate the need to update the {@link TrainFactory#ownerStorage} list, because if the inventory changes, the instance changes.
+	 * 
+	 * @param e The {@link InventoryMoveItemEvent} associated with the chest.
+	 */
 	public void onMinecartChestInventory(InventoryMoveItemEvent e) {
 		Inventory inv = e.getInitiator();
 
@@ -82,6 +84,10 @@ public class TrainLis extends DefaultListener {
 	}
 
 
+	/**
+	 *  THIS EVENT IS NOT BEING USED AT THE MOMENT. WE NEED TO FIGURE OUT WHAT TO DO WITH BROKEN CARTS
+	 * @param event
+	 */
 	//	@EventHandler(priority = EventPriority.MONITOR)
 	public void onGroupBreak(GroupRemoveEvent event) {
 		MinecartGroup mg = event.getGroup();
@@ -103,7 +109,7 @@ public class TrainLis extends DefaultListener {
 			} catch (ClassCastException e) {
 				try {
 					MinecartMemberChest mmc = (MinecartMemberChest) mm;
-					for(List<MinecartMemberChest> list : TrainFactory.ownerList.values()) {
+					for(List<MinecartMemberChest> list : TrainFactory.ownerStorage.values()) {
 						if(list.contains(mmc)) {
 							list.remove(mmc);
 							return;
@@ -114,6 +120,10 @@ public class TrainLis extends DefaultListener {
 		}
 	}
 
+	/**
+	 *  THIS EVENT IS NOT BEING USED AT THE MOMENT. WE NEED TO FIGURE OUT WHAT TO DO WITH BROKEN CARTS
+	 * @param event
+	 */
 	//	@EventHandler(priority = EventPriority.MONITOR)
 	public void onCartBreak(MemberRemoveEvent event) {
 		MinecartMember<?> mm = event.getMember();
@@ -132,9 +142,11 @@ public class TrainLis extends DefaultListener {
 				}
 			}
 		} catch (ClassCastException e) {
+			//If the first cast fails, we try the chest minecart cast.
 			try {
 				MinecartMemberChest mmc = (MinecartMemberChest) mm;
-				for(List<MinecartMemberChest> list : TrainFactory.ownerList.values()) {
+				for(List<MinecartMemberChest> list : TrainFactory.ownerStorage.values()) {
+					//If the minecart is contained within the list, remove it from the list.
 					if(list.contains(mmc)) {
 						list.remove(mmc);
 						return;
@@ -170,7 +182,7 @@ public class TrainLis extends DefaultListener {
 		Block block = event.getClickedBlock();
 
 		/*The tool of choice is the blaze rod.
-		 * We check to make sure the blaze rod has the appropriate meta added to it.
+		 * We check to make sure the blaze rod has the appropriate itemmeta added to it.
 		 */
 		if(event.getItem() == null) return;
 		if(!event.getItem().getItemMeta().hasLore()) return;
@@ -205,10 +217,11 @@ public class TrainLis extends DefaultListener {
 				//If this is not changed, it was not a relevant action.
 				if(store == 3) return;
 
-
+				//Store the player's selected location in the selections map.
 				if(TrainFactory.selections.containsKey(p)) {
 					TrainFactory.selections.get(p)[store] = block.getLocation();
 				}
+				//If the player does not have selections, instantiate one and put the variables in.
 				else {
 					Location[] loc = new Location[2];
 					loc[store] = block.getLocation();
@@ -218,6 +231,11 @@ public class TrainLis extends DefaultListener {
 		}
 	}
 
+	/**
+	 * Prevents the Train Tool from breaking blocks.
+	 * 
+	 * @param event The {@link BlockBreakEvent} associated with the block.
+	 */
 	@EventHandler
 	public void onRailBreak(BlockBreakEvent event) {
 		try {
@@ -239,6 +257,8 @@ public class TrainLis extends DefaultListener {
 		Sign sign = (Sign) bs;
 
 		Player player = event.getPlayer();
+		//These lines will be used later to determine currency, quite possibly.
+		
 		//		PlayerInventory ip = player.getInventory();
 		//		ItemStack[] items = ip.getContents();		
 		String[] lines = sign.getLines();
@@ -247,7 +267,7 @@ public class TrainLis extends DefaultListener {
 
 		//TODO Incomplete logic! Need to add in the economy stuffs.
 		if(lines[0].equals("{trains}")) {
-			//Make sure that the train exists in our map system.
+			//Make sure that the train exists in our map.
 			if(TrainFactory.trains.containsKey(lines[2])) {
 
 				if(lines[1].equalsIgnoreCase("buy_storage")) {
@@ -270,6 +290,11 @@ public class TrainLis extends DefaultListener {
 		}
 	}
 
+	/**
+	 * This will be used to facilitate the permissions of chest minecarts.
+	 * 
+	 * @param event The {@link InventoryOpenEvent} associated with the chest.
+	 */
 	public void onChestClick(InventoryOpenEvent event) {
 
 		event.setCancelled(true);
@@ -277,7 +302,7 @@ public class TrainLis extends DefaultListener {
 		Player p = (Player) event.getPlayer();
 		Inventory i = event.getInventory();
 
-		if(TrainFactory.ownerList.containsKey(p)) {
+		if(TrainFactory.ownerStorage.containsKey(p)) {
 			for(MinecartMemberChest chest : TrainFactory.getInventoryList(p)) {
 				if(chest.getEntity().getInventory() == i) {
 					event.setCancelled(false);

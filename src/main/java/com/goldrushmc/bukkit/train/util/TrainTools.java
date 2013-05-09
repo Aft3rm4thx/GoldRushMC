@@ -54,6 +54,12 @@ public class TrainTools {
 		}
 	}
 
+	/**
+	 * Gets the blockface to the left of the specified block face.
+	 * 
+	 * @param face The {@link BlockFace} selected.
+	 * @return The {@link BlockFace} to the left.
+	 */
 	public static BlockFace toTheLeft(BlockFace face) {
 		BlockFace left;
 		switch(face) {
@@ -78,6 +84,13 @@ public class TrainTools {
 		return left;
 	}
 
+	/**
+	 * Gets the distance between two locations, in a linear direction.
+	 * 
+	 * @param loc1 The first {@link Location}.
+	 * @param loc2 The second {@link Location}.
+	 * @return The {@code Integer} distance.
+	 */
 	public static int getDistance(Location loc1, Location loc2) {
 
 		if(loc1.equals(loc2)) {
@@ -103,6 +116,13 @@ public class TrainTools {
 		return -1;
 	}
 
+	/**
+	 * Finds the middle of two points. Not too useful yet.
+	 * 
+	 * @param loc1
+	 * @param loc2
+	 * @return
+	 */
 	public static Location getMiddle(Location loc1, Location loc2) {
 
 		if(!loc1.equals(loc2)) {
@@ -146,6 +166,12 @@ public class TrainTools {
 		return true;
 	}
 	
+	/**
+	 * An {@code enum} used to determine the type of train.
+	 * 
+	 * @author Diremonsoon
+	 *
+	 */
 	public enum TrainType {
 		DEFAULT("Default"),
 		PUBLIC("Public"),

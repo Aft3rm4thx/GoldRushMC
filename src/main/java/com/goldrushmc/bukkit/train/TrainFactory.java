@@ -25,8 +25,9 @@ import com.goldrushmc.bukkit.train.util.TrainTools.TrainType;
 /**
  * <p>This class is in charge of facilitating the TrainCarts plugin.</p>
  * <p>It will be used for creating and deleting trains, as well as keeping track of them.</p>
+ * <p>This class's methods are all static, as it is only really used for its methods, and we need static maps (so that multiple instances are not created).
  * 
- * @author Diremonsoon09
+ * @author Diremonsoon
  * @version 1.0
  */
 public class TrainFactory {
@@ -35,7 +36,9 @@ public class TrainFactory {
 	public static Map<String, MinecartGroup> trains = new HashMap<String, MinecartGroup>();
 
 	//References the owners to a list of minecarts they own.
-	public static Map<Player, List<MinecartMemberChest>> ownerList = new HashMap<Player, List<MinecartMemberChest>>();
+	//Chest Minecart owners
+	public static Map<Player, List<MinecartMemberChest>> ownerStorage = new HashMap<Player, List<MinecartMemberChest>>();
+	//Rideable Minecart owners
 	public static Map<Player, List<MinecartMemberRideable>> ownerRideable = new HashMap<Player, List<MinecartMemberRideable>>();
 
 	//Stores the player's rail selections
@@ -46,6 +49,7 @@ public class TrainFactory {
 	 * 
 	 * <p>Use this to create new Standard Trains on the map.</p>
 	 * <p>This is configured so trains ALWAYS SPAWN RIGHT TO LEFT</p>
+	 * <p>This means that the train furnace will spawn on the very left, to the perspective of the creator</p>
 	 * 
 	 * 
 	 * <p><b>Standard trains have:</b></p>
@@ -348,20 +352,19 @@ public class TrainFactory {
 		//Link the new minecart to the train.
 		MinecartGroup.link(m1, m2);
 
-		//Add the owner and cart to the ownerList. Need to cast in order to get proper functionality....
-		
-		
+		//Check if the minecart is a chest minecart.
 		if(m2.getClass().isInstance(new MinecartMemberChest())) {
 			//If they are not there, initialize a list and put the first cart in there.
-			if(!ownerList.containsKey(owner)) {
+			if(!ownerStorage.containsKey(owner)) {
 				List<MinecartMemberChest>	addThis = new ArrayList<MinecartMemberChest>();
 				addThis.add((MinecartMemberChest) m2);
-				ownerList.put(owner, addThis);
+				ownerStorage.put(owner, addThis);
 			}
 			//Otherwise, just add this cart to their list.
 			else {
-				ownerList.get(owner).add((MinecartMemberChest) m2);
+				ownerStorage.get(owner).add((MinecartMemberChest) m2);
 			}
+			//If not, we consider it a regular minecart, which is rideable.
 		} else {
 			//If they are not there, initialize a list and put the first cart in there.
 			if(!ownerRideable.containsKey(owner)) {
@@ -380,8 +383,9 @@ public class TrainFactory {
 	/**
 	 * Removes the specified minecart from the train, by getting the inventory the player owns. 
 	 * 
-	 * @param trainName
-	 * @param owner
+	 * @param trainName The train to remove the cart from.
+	 * @param owner The owner of the minecart.
+	 * @param cartType The type of cart to delete.
 	 */
 	public static void removeCart(String trainName, Player owner, EntityType cartType) {
 
@@ -395,10 +399,14 @@ public class TrainFactory {
 			}
 		}
 
-		//Determine what we want to delete
+		/*
+		 * This list will be occupied by either the chest owner or ride owner list. 
+		 * We don't know, so we don't give it a type.
+		 */
 		List<?> listOf = null;
+		//If its a chest minecart
 		if(cartType.equals(EntityType.MINECART_CHEST)) {
-			listOf = ownerList.get(owner);
+			listOf = ownerStorage.get(owner);
 			MinecartMemberChest toRemove = null;
 			if(listOf != null) {
 				int i = listOf.size() - 1;
@@ -406,13 +414,17 @@ public class TrainFactory {
 				toRemove = (MinecartMemberChest) listOf.get(i);
 			}
 			if(toRemove == null) return;
-
+			
+			/*
+			 * Iterate through the minecart members in each train.
+			 * As luck would have it, trains are iterable, because they are extending ArrayList<MinecartMember<?>>.
+			 */
 			for(MinecartMember<?> cart : train) {
 				try {
 					MinecartMemberChest chestCart = (MinecartMemberChest) cart;
 
 					if(chestCart == toRemove) {
-						ownerList.get(owner).remove(chestCart);
+						ownerStorage.get(owner).remove(chestCart);
 						train.remove(cart);
 						cart.getGroup().destroy();
 						break;
@@ -420,6 +432,7 @@ public class TrainFactory {
 				} catch (ClassCastException e) {}
 			}
 		}
+		//If its a regular minecart
 		else if(cartType.equals(EntityType.MINECART)) {
 			listOf = ownerRideable.get(owner);
 			MinecartMemberRideable toRemove = null;
@@ -452,24 +465,40 @@ public class TrainFactory {
 	 * @return The owner of the inventory.
 	 */
 	public static Player findOwnerByInv(Inventory inv) {
-		for(Player p : ownerList.keySet()) {
-			if(ownerList.get(p).contains(inv)) {
-				return p;
+		for(Player p : ownerStorage.keySet()) {
+			for(List<MinecartMemberChest> mmcList : ownerStorage.values()) {
+				for(MinecartMemberChest mmc : mmcList) {
+					if(mmc.getEntity().getInventory() == inv) {
+						return p;
+					}
+				}
 			}
 		}
 		return null;
 	}
 
+	/**
+	 * Gets the chest minecart list associated with the player.
+	 * 
+	 * @param p The player.
+	 * @return The {@code List<MinecartMemberChest>}
+	 */
 	public static List<MinecartMemberChest> getInventoryList(Player p) {
-		return ownerList.get(p);
+		return ownerStorage.get(p);
 	}
 
+	/**
+	 * Gets the rideable minecart list associated with the player.
+	 * 
+	 * @param p The player.
+	 * @return The {@code List<MinecartMemberRideable>}
+	 */
 	public static List<MinecartMemberRideable> getRideList(Player p) {
 		return ownerRideable.get(p);
 	}
 
 	public static boolean hasInvList(Player p) {
-		return ownerList.containsKey(p);
+		return ownerStorage.containsKey(p);
 	}
 
 	public static boolean hasRideList(Player p) {

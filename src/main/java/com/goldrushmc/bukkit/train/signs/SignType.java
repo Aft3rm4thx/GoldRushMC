@@ -4,6 +4,7 @@ import org.bukkit.permissions.Permission;
 
 /**
  * This {@code enum} is for the different signs planned for the server.
+ * It is a permissions constant enum.
  * 
  *
  * 
