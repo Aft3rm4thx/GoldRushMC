@@ -288,7 +288,7 @@ public class TrainFactory {
 
 		trains.put(nameOfTrain, mg);
 	}
-
+	
 	/**
 	 * Will add a cart to the specified train (via name) with a specific owner.
 	 * 
@@ -308,9 +308,12 @@ public class TrainFactory {
 				break;
 			}
 		}
-
+		
 		//If there is no train to link, fail silently.
 		if(trainToLink == null) return;
+		
+		//If the train size is 16 long, it is the max size, and we should not add more.
+		if(trainToLink.size() == 15) { owner.sendMessage("The train is full! Please wait for the next train to come."); return; }
 
 		//Get the last minecart in the train.
 		MinecartMember<?> m1 = trainToLink.get(trainToLink.size() - 1);
