@@ -425,7 +425,7 @@ public class TrainFactory {
 
 					if(chestCart == toRemove) {
 						ownerStorage.get(owner).remove(chestCart);
-						train.remove(cart);
+						train.removeSilent(cart);
 						cart.getGroup().destroy();
 						break;
 					}
@@ -449,7 +449,7 @@ public class TrainFactory {
 
 					if(rideCart == toRemove) {
 						ownerRideable.get(owner).remove(rideCart);
-						train.remove(cart);
+						train.removeSilent(cart);
 						cart.getGroup().destroy();
 						break;
 					}
