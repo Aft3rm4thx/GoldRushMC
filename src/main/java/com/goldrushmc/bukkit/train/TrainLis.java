@@ -172,9 +172,6 @@ public class TrainLis extends DefaultListener {
 
 		//If block is null, fail silently.
 		if(block == null) return;
-		//TODO TEMP
-		event.getPlayer().sendMessage("Time FULL is:" + block.getWorld().getFullTime());
-		event.getPlayer().sendMessage("Time RELATIVE is:" + block.getWorld().getTime());
 		//If the block type is a rail, we pass it to the method in charge of rail clicking.
 		if(TrainTools.isRail(block)) onRailClick(event);
 		if(block.getType().equals(Material.WALL_SIGN) || block.getType().equals(Material.SIGN) || block.getType().equals(Material.SIGN_POST)) onSignClick(event);
