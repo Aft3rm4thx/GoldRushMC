@@ -27,6 +27,7 @@ import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.events.GroupLinkEvent;
 import com.bergerkiller.bukkit.tc.events.GroupRemoveEvent;
 import com.bergerkiller.bukkit.tc.events.MemberRemoveEvent;
+import com.bergerkiller.bukkit.tc.events.MemberSpawnEvent;
 import com.goldrushmc.bukkit.defaults.DefaultListener;
 import com.goldrushmc.bukkit.train.util.TrainTools;
 
@@ -34,6 +35,9 @@ public class TrainLis extends DefaultListener {
 
 	public TrainLis(JavaPlugin plugin) {
 		super(plugin);
+	}
+	
+	public void onTrainSpawn(MemberSpawnEvent event) {
 	}
 
 	/**
@@ -48,6 +52,7 @@ public class TrainLis extends DefaultListener {
 		Player p = TrainFactory.findOwnerByInv(inv);
 
 		//if we have no owner, then get the opposite inventory, in hopes that it will be a minecart owned inventory.
+		@SuppressWarnings("unused")
 		Inventory toUse = null;
 		if(p == null) {
 			Inventory source = e.getSource(), dest = e.getDestination();
@@ -61,7 +66,7 @@ public class TrainLis extends DefaultListener {
 		} else {
 			toUse = inv;
 		}
-		
+
 	}
 
 	/**
@@ -166,12 +171,15 @@ public class TrainLis extends DefaultListener {
 		Block block = event.getClickedBlock();
 
 		//If block is null, fail silently.
-		if(block == null) return;		
+		if(block == null) return;
+		//TODO TEMP
+		event.getPlayer().sendMessage("Time FULL is:" + block.getWorld().getFullTime());
+		event.getPlayer().sendMessage("Time RELATIVE is:" + block.getWorld().getTime());
 		//If the block type is a rail, we pass it to the method in charge of rail clicking.
 		if(TrainTools.isRail(block)) onRailClick(event);
 		if(block.getType().equals(Material.WALL_SIGN) || block.getType().equals(Material.SIGN) || block.getType().equals(Material.SIGN_POST)) onSignClick(event);
 	}
-
+	
 	/**
 	 * Controls how the player sets coordinates for the creation of trains.
 	 * 
@@ -258,7 +266,7 @@ public class TrainLis extends DefaultListener {
 
 		Player player = event.getPlayer();
 		//These lines will be used later to determine currency, quite possibly.
-		
+
 		//		PlayerInventory ip = player.getInventory();
 		//		ItemStack[] items = ip.getContents();		
 		String[] lines = sign.getLines();
@@ -279,10 +287,12 @@ public class TrainLis extends DefaultListener {
 					TrainFactory.addCart(player, lines[2], EntityType.MINECART);
 				}
 				else if(lines[1].equalsIgnoreCase("sell_storage")) {
+					if(!TrainFactory.hasStoreCarts(player)) {player.sendMessage("You haven no storage carts to sell."); return; }
 					player.sendMessage("You sold your cart for storage!");
 					TrainFactory.removeCart(lines[2], player, EntityType.MINECART_CHEST);
 				}
 				else if(lines[1].equalsIgnoreCase("sell_ride")) {
+					if(!TrainFactory.hasRideCarts(player)) {player.sendMessage("You haven no passenger carts to sell."); return; }
 					player.sendMessage("You sold your cart for riding!");
 					TrainFactory.removeCart(lines[2], player, EntityType.MINECART);
 				}

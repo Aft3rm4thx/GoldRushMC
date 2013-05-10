@@ -10,10 +10,12 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
+import com.bergerkiller.bukkit.tc.CollisionMode;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
@@ -41,6 +43,8 @@ public class TrainFactory {
 	//Rideable Minecart owners
 	public static Map<Player, List<MinecartMemberRideable>> ownerRideable = new HashMap<Player, List<MinecartMemberRideable>>();
 
+	public static List<Sign> trainStations;
+	
 	//Stores the player's rail selections
 	public static Map<Player, Location[]> selections = new HashMap<Player, Location[]>();
 
@@ -264,6 +268,8 @@ public class TrainFactory {
 		tp.setSpeedLimit(speedLimit);
 		tp.setPickup(false);
 		tp.setKeepChunksLoaded(true);
+		tp.playerCollision = CollisionMode.KILL;
+		tp.mobCollision = CollisionMode.KILL;
 		mg.setProperties(tp);
 
 		trains.put(nameOfTrain, mg);
@@ -288,6 +294,8 @@ public class TrainFactory {
 		tp.setPickup(false);
 		tp.setKeepChunksLoaded(true);
 		tp.setManualMovementAllowed(false);
+		tp.playerCollision = CollisionMode.KILL;
+		tp.mobCollision = CollisionMode.KILL;
 		mg.setProperties(tp);
 
 		trains.put(nameOfTrain, mg);
@@ -316,11 +324,14 @@ public class TrainFactory {
 		//If there is no train to link, fail silently.
 		if(trainToLink == null) return;
 		
-		//If the train size is 16 long, it is the max size, and we should not add more.
+		//If the train is moving, we don't want to add carts to it.
+		if(trainToLink.isMoving()) { owner.sendMessage("The train is currently moving. Please wait until it has arrived at a station."); return; }
+		
+		//If the train size is 15 long, it is the max size, and we should not add more.
 		if(trainToLink.size() == 15) { owner.sendMessage("The train is full! Please wait for the next train to come."); return; }
 
 		//Get the last minecart in the train.
-		MinecartMember<?> m1 = trainToLink.get(trainToLink.size() - 1);
+		MinecartMember<?> m1 = trainToLink.tail();
 
 		//Small block map to determine location placement.
 		Discoverable disco = new SmallBlockMap(m1.getBlock());
@@ -398,6 +409,12 @@ public class TrainFactory {
 				break;
 			}
 		}
+		
+		//Make sure the train actually exists.
+		if(train == null) { owner.sendMessage("It appears this train does not exist."); return; }
+		
+		//If the train is moving, we don't want to add carts to it.
+		if(train.isMoving()) { owner.sendMessage("The train is currently moving. Please wait until it has arrived at a station."); return; }
 
 		/*
 		 * This list will be occupied by either the chest owner or ride owner list. 
@@ -427,6 +444,7 @@ public class TrainFactory {
 						ownerStorage.get(owner).remove(chestCart);
 						train.removeSilent(cart);
 						cart.getGroup().destroy();
+						train.respawn();
 						break;
 					}
 				} catch (ClassCastException e) {}
@@ -451,6 +469,7 @@ public class TrainFactory {
 						ownerRideable.get(owner).remove(rideCart);
 						train.removeSilent(cart);
 						cart.getGroup().destroy();
+						train.respawn();
 						break;
 					}
 				} catch (ClassCastException e) {}
@@ -503,6 +522,34 @@ public class TrainFactory {
 
 	public static boolean hasRideList(Player p) {
 		return ownerRideable.containsKey(p);
+	}
+	
+	public static boolean hasCarts(Player p) {
+		List<?> cartList1 = ownerStorage.get(p), cartList2 = ownerRideable.get(p);
+		if((cartList1.size() + cartList2.size()) == 0) return false;
+		else return true;
+	}
+	
+	public static boolean hasRideCarts(Player p) {
+		List<?> rides = ownerRideable.get(p);
+		if(rides != null) {
+			if(rides.size() == 0) {
+				return false;
+			}
+			else return true;
+		}
+		else return false;
+	}
+	
+	public static boolean hasStoreCarts(Player p) {
+		List<?> rides = ownerStorage.get(p);
+		if(rides != null) {
+			if(rides.size() == 0) {
+				return false;
+			}
+			else return true;
+		}
+		else return false;
 	}
 
 	/**

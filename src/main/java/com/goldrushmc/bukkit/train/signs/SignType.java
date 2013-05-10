@@ -13,6 +13,7 @@ import org.bukkit.permissions.Permission;
  */
 public enum SignType {
 	TOWN(new Permission("goldrushmc.sign.town")),
+	TRAIN_STATION(new Permission("goldrushmc.sign.station")),
 	ADD_CART(new Permission("goldrushmc.sign.addcart")),
 	FIX_BRIDGE(new Permission("goldrushmc.sign.bridgerepair")),
 	PAY_TAX(new Permission("goldrushmc.sign.paytax")),
