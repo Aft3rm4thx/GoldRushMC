@@ -1,0 +1,6 @@
+name: CollapsingTunnels
+version: 0.1
+main: com.goldrushmc.bukkit.CollapsingTunnels.CollapsingTunnels
+author: 1SmallVille1
+commands:
+    fall:
