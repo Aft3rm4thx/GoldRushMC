@@ -2,6 +2,7 @@ name: GoldRushMC
 version: 1.1
 description: The plugin created to facilitate the Gold Rush Server Features
 author: Diremonsoon, lexwebb
+database: true
 #website: http://forums.bukkit.org/threads/ GET NEW WEBSITE ADDRESS AND APPEND
 
 main: com.goldrushmc.bukkit.main.Main

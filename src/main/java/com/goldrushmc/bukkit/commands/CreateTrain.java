@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.train.TrainFactory;
+import com.goldrushmc.bukkit.train.util.TrainTools.TrainType;
 
 public class CreateTrain extends CommandDefault {
 
@@ -34,7 +35,7 @@ public class CreateTrain extends CommandDefault {
 			if(args[0].equalsIgnoreCase("Standard")) {
 				if(args.length == 4) {
 					if(isDouble(args[3])) {
-						TrainFactory.newStandardTrain(player, args[1], args[2], Double.valueOf(args[3]));
+						TrainFactory.newStandardTrain(player, args[1], TrainType.getType(args[2]), Double.valueOf(args[3]));
 						return true;
 					}
 				}
@@ -48,7 +49,7 @@ public class CreateTrain extends CommandDefault {
 			if(args[0].equalsIgnoreCase("Custom")) {
 				if(args.length == 5) {
 					if(isInt(args[3]) && isInt(args[4]) && isDouble(args[5])) {
-						TrainFactory.newCustomTrain(player, args[1], args[2], Integer.valueOf(args[3]), Integer.valueOf(args[4]), Double.valueOf(args[5]));
+						TrainFactory.newCustomTrain(player, args[1], TrainType.getType(args[2]), Integer.valueOf(args[3]), Integer.valueOf(args[4]), Double.valueOf(args[5]));
 						return true;
 					}
 				}
@@ -57,7 +58,7 @@ public class CreateTrain extends CommandDefault {
 			else if(args[0].equalsIgnoreCase("Passenger")) {
 				if(args.length == 5) {
 					if(isInt(args[3]) && isDouble(args[4])) {
-						TrainFactory.newPassengerTrain(player, args[1], args[2], Integer.valueOf(args[3]), Double.valueOf(args[4]));
+						TrainFactory.newPassengerTrain(player, args[1], TrainType.getType(args[2]), Integer.valueOf(args[3]), Double.valueOf(args[4]));
 						return true;
 					}
 				}
@@ -65,7 +66,7 @@ public class CreateTrain extends CommandDefault {
 			else if(args[0].equalsIgnoreCase("Storage")) {
 				if(args.length == 5) {
 					if(isInt(args[3]) && isDouble(args[4])) {
-						TrainFactory.newStorageTrain(player, args[1], args[2], Integer.valueOf(args[3]), Double.valueOf(args[4]));
+						TrainFactory.newStorageTrain(player, args[1], TrainType.getType(args[2]), Integer.valueOf(args[3]), Double.valueOf(args[4]));
 						return true;
 					}
 				}

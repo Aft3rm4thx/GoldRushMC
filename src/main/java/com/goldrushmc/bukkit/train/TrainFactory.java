@@ -66,7 +66,8 @@ public class TrainFactory {
 	 * @param trainSpawn Location of where to spawn the train
 	 * @param nameOfTrain The name of the new train
 	 */
-	public static void newStandardTrain(Player player, String nameOfTrain, String trainType, double speedLimit) {
+	@Deprecated
+	public static void newStandardTrain(Player player, String nameOfTrain, TrainType trainType, double speedLimit) {
 
 		//Get the cardinal direction to the left of the player.
 		BlockFace leftDir = TrainTools.toTheLeft(TrainTools.getDirection(player));
@@ -84,7 +85,7 @@ public class TrainFactory {
 		carts.add(EntityType.MINECART_CHEST);
 
 
-		makeTrain(TrainType.getType(trainType), nameOfTrain, trainSpawn.getBlock(), leftDir, carts, speedLimit);
+		makeTrain(trainType, nameOfTrain, trainSpawn.getBlock(), leftDir, carts, speedLimit);
 	}
 
 
@@ -107,7 +108,8 @@ public class TrainFactory {
 	 * @param speedLimit the limit of speed.
 	 * @param trainType The type of train to be spawned.
 	 */
-	public static void newCustomTrain(Player player, String nameOfTrain, String trainType, int numOfPassengers, int numOfChests, double speedLimit) {
+	@Deprecated
+	public static void newCustomTrain(Player player, String nameOfTrain, TrainType trainType, int numOfPassengers, int numOfChests, double speedLimit) {
 
 		//Get the cardinal direction to the left of the player.
 		BlockFace leftDir = TrainTools.toTheLeft(TrainTools.getDirection(player));
@@ -144,7 +146,7 @@ public class TrainFactory {
 		}
 
 
-		makeTrain(TrainType.getType(trainType), nameOfTrain, trainSpawn.getBlock(), leftDir, carts, speedLimit);
+		makeTrain(trainType, nameOfTrain, trainSpawn.getBlock(), leftDir, carts, speedLimit);
 	}
 
 	/**
@@ -163,7 +165,8 @@ public class TrainFactory {
 	 * @param speedLimit the limit of speed.
 	 * @param trainType The type of train to be spawned.
 	 */
-	public static void newPassengerTrain(Player player, String nameOfTrain, String trainType, int numOfPassengers, double speedLimit) {
+	@Deprecated
+	public static void newPassengerTrain(Player player, String nameOfTrain, TrainType trainType, int numOfPassengers, double speedLimit) {
 
 		//Get the cardinal direction to the left of the player.
 		BlockFace leftDir = TrainTools.toTheLeft(TrainTools.getDirection(player));
@@ -197,7 +200,7 @@ public class TrainFactory {
 			carts.add(EntityType.MINECART);
 		}
 
-		makeTrain(TrainType.getType(trainType), nameOfTrain, trainSpawn.getBlock(), leftDir, carts, speedLimit);
+		makeTrain(trainType, nameOfTrain, trainSpawn.getBlock(), leftDir, carts, speedLimit);
 	}
 
 	/**
@@ -216,7 +219,8 @@ public class TrainFactory {
 	 * @param speedLimit the limit of speed.
 	 * @param trainType The type of train to be spawned.
 	 */
-	public static void newStorageTrain(Player player, String nameOfTrain, String trainType, int numOfChests, double speedLimit) {
+	@Deprecated
+	public static void newStorageTrain(Player player, String nameOfTrain, TrainType trainType, int numOfChests, double speedLimit) {
 		//Get the cardinal direction to the left of the player.
 		BlockFace leftDir = TrainTools.toTheLeft(TrainTools.getDirection(player));
 
@@ -247,7 +251,37 @@ public class TrainFactory {
 			carts.add(EntityType.MINECART_CHEST);
 		}
 
-		makeTrain(TrainType.getType(trainType), nameOfTrain, trainSpawn.getBlock(), leftDir, carts, speedLimit);
+		makeTrain(trainType, nameOfTrain, trainSpawn.getBlock(), leftDir, carts, speedLimit);
+	}
+	@Deprecated
+	public static void newStorageTrain(Player player, BlockFace face, String nameOfTrain, TrainType trainType, int numOfChests, double speedLimit) {
+		//Get the cardinal direction to the left of the player.
+		BlockFace leftDir = TrainTools.toTheLeft(TrainTools.getDirection(player));
+		
+
+		Location[] locMap = selections.get(player);
+		Location trainSpawn = locMap[0];
+
+		//Measure the distance between the two locations, to see how big they want the train.
+		int dist = TrainTools.getDistance(trainSpawn, locMap[1]);
+		player.sendMessage("The distance between your two points are: " + dist);
+
+		if(dist < numOfChests) {
+			player.sendMessage("There is not enough room to put a train here!");
+			player.sendMessage("----------------------------------------------");
+			player.sendMessage("As a standard rule of thumb, count the number of carts of the train, and add 4 to it.");
+			player.sendMessage("That is how much space is required.");
+			return;
+		}
+
+		//Specifying the cart types to be created.
+		List<EntityType> carts = new LinkedList<EntityType>();
+		carts.add(EntityType.MINECART_FURNACE);
+		for(int i = 0; i < numOfChests; i++) {
+			carts.add(EntityType.MINECART_CHEST);
+		}
+
+		makeTrain(trainType, nameOfTrain, trainSpawn.getBlock(), face, carts, speedLimit);
 	}
 
 	/**
@@ -258,6 +292,7 @@ public class TrainFactory {
 	 * @param face The direction the train will face.
 	 * @param carts The {@link EntityType} Minecarts that will represent the train.
 	 */
+	@Deprecated
 	private static void makePublicTrain(String nameOfTrain, Block b, BlockFace face, List<EntityType> carts, double speedLimit) {
 		//Add carts to a group to link them
 		MinecartGroup mg = MinecartGroup.spawn(b, face, carts);
@@ -283,6 +318,7 @@ public class TrainFactory {
 	 * @param face The direction the train will face.
 	 * @param carts The {@link EntityType} Minecarts that will represent the train.
 	 */
+	@Deprecated
 	private static void makeTownTrain(String nameOfTrain, Block b, BlockFace face, List<EntityType> carts) {
 		//Add carts to a group to link them
 		MinecartGroup mg = MinecartGroup.spawn(b, face, carts);

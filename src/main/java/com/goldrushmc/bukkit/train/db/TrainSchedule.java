@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -15,6 +16,7 @@ public class TrainSchedule {
 
 	@Id @GeneratedValue private int id;
 	@Column(name = "DEPART_TIME") @NotNull  private long timeToDepart;
+	@ManyToOne @Column(name = "NEXT_STOP") TrainStationTbl station;
 	@Column(name = "IS_NEXT") private boolean isNext;
 	@OneToOne private Trains train;
 	
@@ -42,5 +44,11 @@ public class TrainSchedule {
 	}
 	public void setNext(boolean isNext) {
 		this.isNext = isNext;
+	}
+	public TrainStationTbl getStation() {
+		return station;
+	}
+	public void setStation(TrainStationTbl station) {
+		this.station = station;
 	}
 }

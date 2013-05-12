@@ -3,9 +3,14 @@ package com.goldrushmc.bukkit.train.signs;
 import java.util.Map;
 
 import org.bukkit.Chunk;
-import org.bukkit.World;
 import org.bukkit.block.Sign;
 
+/**
+ * Controls and remembers the signs within a given {@link Chunk}. 
+ * 
+ * @author Diremonsoon
+ *
+ */
 public interface ISignLogic {
 
 	/**
@@ -39,8 +44,8 @@ public interface ISignLogic {
 	/**
 	 * Finds the sign type for the specified sign.
 	 * 
-	 * @param sign The sign to check.
-	 * @return The type, if any, of the sign.
+	 * @param sign The {@link Sign} to check.
+	 * @return The {@link SignType}, if any, of the sign.
 	 */
 	public SignType getSignType(Sign sign);
 	
@@ -54,8 +59,14 @@ public interface ISignLogic {
 	/**
 	 * Finds all of the relevant {@link Sign}s to Gold Rush MC, within a given chunk.
 	 * 
-	 * @param world The {@link World} to search.
+	 * @param chunk The {@link Chunk} to search.
 	 */
 	public void findRelevantSigns(Chunk chunk);
+	
+	/**
+	 * Gets the {@link Chunk} associated with this logic.
+	 * @return
+	 */
+	public Chunk getChunk();
 	
 }

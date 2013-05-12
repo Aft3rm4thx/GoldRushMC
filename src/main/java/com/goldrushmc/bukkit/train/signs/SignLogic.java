@@ -77,4 +77,8 @@ public class SignLogic implements ISignLogic {
 	public Sign getSign(String signName) {
 		return this.signs.get(signName);
 	}
+	
+	public Chunk getChunk() {
+		return this.chunk;
+	}
 }

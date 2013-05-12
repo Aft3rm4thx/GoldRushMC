@@ -19,7 +19,7 @@ public class TrainStationLocation {
 	@Column(name = "X") @NotNull private double x;
 	@Column(name = "Y") @NotNull private double y;
 	@Column(name = "Z") @NotNull private double z;
-	@OneToOne private TrainStation station;
+	@OneToOne private TrainStationTbl station;
 	
 	public int getId() {
 		return id;
@@ -51,10 +51,10 @@ public class TrainStationLocation {
 	public void setZ(double z) {
 		this.z = z;
 	}
-	public TrainStation getStation() {
+	public TrainStationTbl getStation() {
 		return station;
 	}
-	public void setStation(TrainStation station) {
+	public void setStation(TrainStationTbl station) {
 		this.station = station;
 	}
 }

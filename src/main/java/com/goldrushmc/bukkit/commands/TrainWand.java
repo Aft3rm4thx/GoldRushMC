@@ -22,18 +22,15 @@ public class TrainWand extends CommandDefault {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 
-		if(!sender.hasPermission("goldrushmc.train.wand")) {
-			sender.sendMessage("You need permission to use the wand!");
-			return true;
-		}
+		if(!sender.hasPermission("goldrushmc.train.wand")) { sender.sendMessage("You need permission to use the wand!"); return true; }
 		
 		Player p = (Player) sender;
 		ItemStack blazeRod = new ItemStack(Material.BLAZE_ROD);
 		List<String> lore = new ArrayList<String>();
-		lore.add("TrainTool");
+		lore.add("Creatable");
 		ItemMeta meta = blazeRod.getItemMeta();
 		meta.setLore(lore);
-		meta.setDisplayName("Train Wand");
+		meta.setDisplayName("Station Tool");
 		blazeRod.setItemMeta(meta);
 		p.setItemInHand(blazeRod);
 		return true;

@@ -5,6 +5,17 @@
 	<artifactId>GoldRushMC</artifactId>
 	<version>1.0</version>
 	<name>GoldRushMC</name>
+	<developers>
+	    <developer>
+	        <name>Diremonsoon</name>
+	    </developer>
+	    <developer>
+	        <name>lexwebb</name>
+	    </developer>
+	    <developer>
+	        <name>SmallVille1</name>
+	    </developer>
+	</developers>
 	<description>A Plugin created to facilitate the Minecraft Server "Gold Rush".</description>
 
 	<repositories>

@@ -22,7 +22,7 @@ public class Trains {
 	@Column(name = "WORLD") @NotEmpty private String worldName;
 	@OneToMany(mappedBy = "train") private Set<TrainSchedule> schedule;
 	@OneToOne private TrainStatus status;
-	@ManyToOne private TrainStation station;
+	@ManyToOne private TrainStationTbl station;
 	
 	public int getId() {
 		return id;
@@ -54,10 +54,10 @@ public class Trains {
 	public void setWorldName(String worldName) {
 		this.worldName = worldName;
 	}
-	public TrainStation getStation() {
+	public TrainStationTbl getStation() {
 		return station;
 	}
-	public void setStation(TrainStation station) {
+	public void setStation(TrainStationTbl station) {
 		this.station = station;
 	}
 }

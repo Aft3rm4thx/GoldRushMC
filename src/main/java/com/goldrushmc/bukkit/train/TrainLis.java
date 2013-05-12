@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -173,7 +172,7 @@ public class TrainLis extends DefaultListener {
 		//If block is null, fail silently.
 		if(block == null) return;
 		//If the block type is a rail, we pass it to the method in charge of rail clicking.
-		if(TrainTools.isRail(block)) onRailClick(event);
+//		if(TrainTools.isRail(block)) onRailClick(event);
 		if(block.getType().equals(Material.WALL_SIGN) || block.getType().equals(Material.SIGN) || block.getType().equals(Material.SIGN_POST)) onSignClick(event);
 	}
 	
@@ -233,20 +232,6 @@ public class TrainLis extends DefaultListener {
 					TrainFactory.selections.put(p, loc);
 				}
 			}
-		}
-	}
-
-	/**
-	 * Prevents the Train Tool from breaking blocks.
-	 * 
-	 * @param event The {@link BlockBreakEvent} associated with the block.
-	 */
-	@EventHandler
-	public void onRailBreak(BlockBreakEvent event) {
-		try {
-			if(event.getPlayer().getItemInHand().getItemMeta().getLore().contains("TrainTool")) event.setCancelled(true);
-		} catch (NullPointerException e) {
-			return;
 		}
 	}
 
