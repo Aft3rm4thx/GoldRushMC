@@ -33,19 +33,29 @@ commands:
    permission: golrushmc.guns
    usage: /<command>
    
+  panningtool:
+   description: Retriever of Gold Panning Pan
+   aliases: [pt]
+   permission: golrushmc.goldpan
+   usage: /<command>
+   
 permissions:
   goldrushmc.*:
-    description: Gives access to all commands to the plugin
+    description: Gives access to all commands to Gold Rush.
     children:
      goldrushmc.station.create: true
      goldrushmc.guns: true
      goldrushmc.collapsetest: true
+     golrushmc.goldpan: true
   goldrushmc.station.create:
     description: Allows you to spawn the station wand and make stations.
     default: true
   goldrushmc.guns:
    description: Allows access to guns
    default: true
-  goldrushmc.collapsetest
+  goldrushmc.collapsetest:
    description: Tests collapse tool
+   default: true
+  golrushmc.goldpan:
+   description: Allows access to Gold Panning
    default: true
