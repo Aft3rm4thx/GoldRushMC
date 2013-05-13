@@ -9,7 +9,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.goldrushmc.bukkit.commands.AddTrain;
-import com.goldrushmc.bukkit.commands.CreateTrain;
 import com.goldrushmc.bukkit.commands.CreateTrainStation;
 import com.goldrushmc.bukkit.commands.StationWand;
 import com.goldrushmc.bukkit.db.BankTbl;
@@ -39,7 +38,7 @@ public final class Main extends JavaPlugin{
 	public void onEnable() {
 		setupDB();
 		
-		getCommand("Train").setExecutor(new CreateTrain(this));
+//		getCommand("Train").setExecutor(new CreateTrain(this));
 		getCommand("StationWand").setExecutor(new StationWand(this));
 		getCommand("Cart").setExecutor(new AddTrain(this));
 		getCommand("Station").setExecutor(new CreateTrainStation(this));

@@ -256,7 +256,7 @@ public class TrainFactory {
 	@Deprecated
 	public static void newStorageTrain(Player player, BlockFace face, String nameOfTrain, TrainType trainType, int numOfChests, double speedLimit) {
 		//Get the cardinal direction to the left of the player.
-		BlockFace leftDir = TrainTools.toTheLeft(TrainTools.getDirection(player));
+//		BlockFace leftDir = TrainTools.toTheLeft(TrainTools.getDirection(player));
 		
 
 		Location[] locMap = selections.get(player);
