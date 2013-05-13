@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-/target
-=======
 *.class
 
 # Package Files #
@@ -39,4 +36,3 @@
 *.ipr
 *.iws
 .idea/
->>>>>>> origin/master
