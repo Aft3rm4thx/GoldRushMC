@@ -73,4 +73,10 @@ public class TrainStationTbl {
 	public void removeArrival(TrainScheduleTbl arrival) {
 		this.departures.remove(arrival);
 	}
+	public void setDepartures(List<TrainScheduleTbl> departures) {
+		this.departures = departures;
+	}
+	public void setArrivals(List<TrainScheduleTbl> arrivals) {
+		this.arrivals = arrivals;
+	}
 }

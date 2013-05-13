@@ -8,11 +8,11 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.PostLoad;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.avaje.ebean.validation.NotEmpty;
+import com.avaje.ebean.validation.NotNull;
 
 @Entity
 @Table(name = "bank_tbl")
@@ -20,11 +20,9 @@ public class BankTbl {
 
 	@Id @GeneratedValue private int id;
 	@Column(name = "BANK_NAME") @NotEmpty private String name;
-	@Column(name = "INTEREST") @NotEmpty private float interest;
-	@Transient private float totalGold;
-	@Transient private int sumOfAccounts;
+	@Column(name = "INTEREST") @NotNull private float interest;
 	@OneToMany(mappedBy = "bank") private Set<PlayerTbl> customers;
-	@OneToOne(mappedBy = "bank") private TownTbl town;
+	@OneToOne private TownTbl town;
 
 	public int getId() {
 		return id;
@@ -43,29 +41,24 @@ public class BankTbl {
 	}
 	public void setInterest(float interest) {
 		this.interest = interest;
-	}
-	public float getTotalGold() {
-		return totalGold;
-	}
+	}	
 	
-	@PostLoad
-	public void setTotalGold() {
-		totalGold = 0;
+	@Transient
+	public float getTotalGold() {
+		float totalGold = 0;
 		if(customers != null) {
 			for(PlayerTbl player : customers) {
 				totalGold += player.getBankGold();
 			}
 		}
 		if(town != null) totalGold += town.getGoldHeld();
+		
+		return totalGold;
 	}
 	
-	@PostLoad
-	public void setSumOfAccounts() {
-		this.sumOfAccounts = customers.size();
-	}
-
+	@Transient
 	public int getSumOfAccounts() {
-		return sumOfAccounts;
+		return customers.size();
 	}
 
 	public Set<PlayerTbl> getCustomers() {
@@ -82,6 +75,12 @@ public class BankTbl {
 	}
 	public void setTown(TownTbl town) {
 		this.town = town;
+	}
+	/**
+	 * @param customers the customers to set
+	 */
+	public void setCustomers(Set<PlayerTbl> customers) {
+		this.customers = customers;
 	}
 
 }

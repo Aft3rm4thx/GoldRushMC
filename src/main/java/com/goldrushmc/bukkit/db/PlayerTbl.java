@@ -5,7 +5,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.PostLoad;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -19,7 +18,6 @@ public class PlayerTbl {
 	@Column(name = "NAME") @NotEmpty private String name;
 	@Column(name = "POCKET_GOLD") private float pocketGold;
 	@Column(name = "BANK_GOLD") private float bankGold;
-	@Transient private float totalWealth;
 	@ManyToOne private BankTbl bank;
 	@ManyToOne private TownTbl town;
 	
@@ -48,12 +46,9 @@ public class PlayerTbl {
 	public void setBankGold(float bankGold) {
 		this.bankGold = bankGold;
 	}
+	@Transient
 	public float getTotalWealth() {
-		return totalWealth;
-	}
-	@PostLoad
-	public void setTotalWealth() {
-		this.totalWealth = pocketGold + bankGold;
+		return pocketGold + bankGold;
 	}
 	public BankTbl getBank() {
 		return bank;

@@ -9,16 +9,15 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.avaje.ebean.validation.NotNull;
-import com.goldrushmc.bukkit.train.station.TrainStation;
 
 @Entity
 @Table(name = "train_schedule_tbl")
 public class TrainScheduleTbl {
 
 	@Id @GeneratedValue private int id;
-	@Column(name = "DEPART_TIME") @NotNull  private long timeToDepart;
-	@ManyToOne TrainStation destination;
-	@ManyToOne TrainStation origin;
+	@Column(name = "DEPART_TIME") @NotNull private long timeToDepart;
+	@ManyToOne TrainStationTbl destination;
+	@ManyToOne TrainStationTbl origin;
 	@ManyToOne @Column(name = "NEXT_STOP") TrainStationTbl station;
 	@Column(name = "IS_NEXT") private boolean isNext;
 	@OneToOne private TrainTbl train;
@@ -54,16 +53,16 @@ public class TrainScheduleTbl {
 	public void setStation(TrainStationTbl station) {
 		this.station = station;
 	}
-	public TrainStation getDestination() {
+	public TrainStationTbl getDestination() {
 		return destination;
 	}
-	public void setDestination(TrainStation destination) {
+	public void setDestination(TrainStationTbl destination) {
 		this.destination = destination;
 	}
-	public TrainStation getOrigin() {
+	public TrainStationTbl getOrigin() {
 		return origin;
 	}
-	public void setOrigin(TrainStation origin) {
+	public void setOrigin(TrainStationTbl origin) {
 		this.origin = origin;
 	}
 }

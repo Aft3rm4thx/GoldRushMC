@@ -57,6 +57,12 @@ public class TrainTbl {
 	public TrainStationTbl getStation() {
 		return station;
 	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
 	public void setStation(TrainStationTbl station) {
 		this.station = station;
 	}

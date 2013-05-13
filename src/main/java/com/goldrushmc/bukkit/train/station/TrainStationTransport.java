@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
@@ -19,8 +20,8 @@ public class TrainStationTransport extends TrainStation {
 
 
 
-	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners) {
-		super(plugin, stationName, corners);
+	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world) {
+		super(plugin, stationName, corners, world);
 		// TODO Auto-generated constructor stub
 	}
 

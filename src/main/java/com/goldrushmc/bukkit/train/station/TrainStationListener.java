@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -23,8 +24,9 @@ import com.goldrushmc.bukkit.train.event.ExitTrainStation;
  */
 public class TrainStationListener extends DefaultListener {
 
-	private Map<Location, String> locToLookFor = new HashMap<Location, String>();
-	private Map<String, TrainStation> stationStore = new HashMap<String, TrainStation>();
+	//Both Maps only exist for quick referential access. Otherwise, we would have to iterate through train stations each time.
+	private static Map<Block, String> locToLookFor = new HashMap<Block, String>();
+	private static Map<String, TrainStation> stationStore = new HashMap<String, TrainStation>();
 
 	public TrainStationListener(JavaPlugin plugin) {
 		super(plugin);
@@ -32,7 +34,7 @@ public class TrainStationListener extends DefaultListener {
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerMove(PlayerMoveEvent event) {
-		Location from = event.getFrom(), to = event.getTo();
+		Block from = event.getFrom().getBlock(), to = event.getTo().getBlock();
 		
 		//Has left the station!
 		if(locToLookFor.containsKey(from)) {
@@ -53,6 +55,7 @@ public class TrainStationListener extends DefaultListener {
 	public void onEntrance(EnterTrainStation event) {
 		TrainStation station = event.getTrainStation();
 		Player p = event.getPlayer();
+		p.sendMessage("Welcome!");
 		if(!station.getVisitors().contains(p)) {
 			station.addVisitor(p);
 		}
@@ -62,6 +65,7 @@ public class TrainStationListener extends DefaultListener {
 	public void onExit(ExitTrainStation event) {
 		TrainStation station = event.getTrainStation();
 		Player p = event.getPlayer();
+		p.sendMessage("GoodBye!");
 		if(station.getVisitors().contains(p)) {
 			station.removeVisitor(p);
 		}
@@ -72,9 +76,21 @@ public class TrainStationListener extends DefaultListener {
 			for(TrainStation station : TrainStation.trainStations) {
 				stationStore.put(station.getStationName(), station);
 				for(Location loc : station.perimeter) {
-					locToLookFor.put(loc, station.getStationName());
+					locToLookFor.put(loc.getBlock(), station.getStationName());
 				}
 			}
+		}
+	}
+	public static void addStation(TrainStation station) {
+		stationStore.put(station.getStationName(), station);
+		for(Location loc : station.getPerimeter()) {
+			locToLookFor.put(loc.getBlock(), station.getStationName());
+		}
+	}
+	public static void removeStation(TrainStation station) {
+		stationStore.remove(station.getStationName());
+		for(Location loc : station.getPerimeter()) {
+			locToLookFor.remove(loc);
 		}
 	}
 }

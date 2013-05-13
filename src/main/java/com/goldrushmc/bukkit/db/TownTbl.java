@@ -8,11 +8,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.PostLoad;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import com.avaje.ebean.validation.NotEmpty;
+import com.avaje.ebean.validation.NotNull;
 
 @Entity
 @Table(name = "town_tbl")
@@ -21,10 +20,9 @@ public class TownTbl {
 	@Id @GeneratedValue private int id;
 	@Column(name = "TOWN_NAME") @NotEmpty private String name;
 	@Column(name = "TAX") private int tax;
-	@Column(name = "LEVEL") @NotEmpty private int level;
+	@Column(name = "LEVEL") @NotNull private int level;
 	@Column(name = "GOLD_HELD") private float goldHeld;
-	@Transient private int population;
-	@OneToOne(mappedBy = "town") private BankTbl bank;
+	@OneToOne private BankTbl bank;
 	@OneToMany(mappedBy = "town") private Set<PlayerTbl> citizens;
 	
 	public int getId() {
@@ -58,7 +56,7 @@ public class TownTbl {
 		this.goldHeld = goldHeld;
 	}
 	public int getPopulation() {
-		return population;
+		return citizens.size();
 	}
 	public BankTbl getBank() {
 		return bank;
@@ -69,17 +67,14 @@ public class TownTbl {
 	public Set<PlayerTbl> getCitizens() {
 		return citizens;
 	}
-	
-	@PostLoad
-	public void setPopulation(int population) {
-		this.population = citizens.size();
-	}
+
 	public void addCitizen(PlayerTbl player) {
 		this.citizens.add(player);
-		this.population = this.citizens.size();
 	}
 	public void removeCitizen(PlayerTbl player) {
 		this.citizens.remove(player);
-		this.population = this.citizens.size();
+	}
+	public void setCitizens(Set<PlayerTbl> citizens) {
+		this.citizens = citizens;
 	}
 }

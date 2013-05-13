@@ -1,5 +1,6 @@
 package com.goldrushmc.bukkit.commands;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,6 @@ import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.train.CardinalMarker;
 import com.goldrushmc.bukkit.train.WandLis;
 import com.goldrushmc.bukkit.train.station.StationType;
-import com.goldrushmc.bukkit.train.station.TrainStation;
 import com.goldrushmc.bukkit.train.station.TrainStationTransport;
 
 
@@ -47,65 +47,243 @@ public class CreateTrainStation extends CommandDefault {
 		
 		if(!(size == 4)) { sender.sendMessage("You need " + (4 - size) + " more markers"); return true; }
 		
-		//Get the list of locations
-		Location[] finalOrder = orderLocations(WandLis.wandLoc.get(p));
+		//Get the list of locations in the right order.
+		List<Location> locs = getDirection(WandLis.wandLoc.get(p));
 		
 		//Store the locations in the appropriate map.
 		Map<CardinalMarker, Location> corners = new HashMap<CardinalMarker, Location>();
-		corners.put(CardinalMarker.NORTH_EAST_CORNER, finalOrder[0]);
-		corners.put(CardinalMarker.NORTH_WEST_CORNER, finalOrder[1]);
-		corners.put(CardinalMarker.SOUTH_EAST_CORNER, finalOrder[2]);
-		corners.put(CardinalMarker.SOUTH_WEST_CORNER, finalOrder[3]);
-		
-		TrainStation station = null;
-		
+		corners.put(CardinalMarker.NORTH_EAST_CORNER, locs.get(0));
+		corners.put(CardinalMarker.SOUTH_EAST_CORNER, locs.get(1));
+		corners.put(CardinalMarker.NORTH_WEST_CORNER, locs.get(2));
+		corners.put(CardinalMarker.SOUTH_WEST_CORNER, locs.get(3));
+				
 		StationType type = StationType.findType(args[1]);
 		if(type == null) { p.sendMessage("Please use a legitimate station type"); return true;}
 		
 		switch(type) {
-		case DEFAULT: station = new TrainStationTransport(plugin, args[2], corners);
+		case DEFAULT: new TrainStationTransport(plugin, args[1], corners, p.getWorld()); break;
 		case PASSENGER_TRANS:
-		case STORAGE_TRANS: station = new TrainStationTransport(plugin, args[2], corners);
-		}
+		case STORAGE_TRANS: new TrainStationTransport(plugin, args[1], corners, p.getWorld()); break;
+		}	
 		
-		//Add the train station to the list.
-		TrainStation.trainStations.add(station);
+		WandLis.wandLoc.remove(p);
+		p.sendMessage("Markers reset!");
 		
-		
-		
-		return false;
+		return true;
 		
 	}
 	
-	/** 
-	 * East = X + 1
-	 * West = X - 1
-	 * South = Z + 1
-	 * North = Z - 1
-	 * 
-	 * North East = X + 1, Z - 1 Highest x, Lowest z
-	 * North West = X - 1, Z - 1 Lowest x, Lowest z
-	 * South East = X + 1, Z + 1 Highest x, Highest z
-	 * South West = X - 1, Z + 1 Lowest x, Highest z
+	/**
+	 * Determines the correct directions for each of the locations and orders them accordingly.
+	 *
+	 * @param locs
 	 * @return
 	 */
-	public Location[] orderLocations(List<Location> locs) {
-		if(!(locs.size() == 4)) return null;
-		
-		//Get the locations
-		Location l1 = locs.get(0), l2 = locs.get(1), l3 = locs.get(2), l4 = locs.get(3);
-		//Get the values of x and z for each location.
-		double x1 = l1.getX(), z1 = l1.getZ(), x2 = l2.getX(), z2 = l2.getZ(), x3 = l3.getX(), z3 = l3.getZ(), x4 = l4.getX(), z4 = l4.getZ();
+	public List<Location> getDirection(List<Location> locs) {
 		
 		
-		//North East
-		if(x1 > x2 && x1 > x3 && x1 > x4 && z1 < z2 && z1 < z3 && z1 < z4);
-		//North West
-		if(x1 < x2 && z1 < z2);
-		//South West
-		if(x1 < x2 && z1 > z2);
+		Location loc1 = locs.get(0), loc2 = locs.get(1), loc3 = locs.get(2), loc4 = locs.get(3);
 		
+		List<Location> directions = new ArrayList<Location>();
+
+		Location southwest = null, northwest = null, southeast = null, northeast = null;
+
+		int x1 = loc1.getBlockX(), z1 = loc1.getBlockZ(), x2 = loc2.getBlockX(), z2 = loc2.getBlockZ();
+		int x3 = loc3.getBlockX(), z3 = loc3.getBlockZ(), x4 = loc4.getBlockX(), z4 = loc4.getBlockZ();
+		boolean u1 = false, u2 = false, u3 = false, u4 = false;
+
+		if (x1 < x2 && z1 < z2) {
+
+			if (x1 < x3 && z1 < z3) {
+
+				if (x1 < x4 && z1 < z4) {
+
+					northwest = loc1;
+					u1 = true;
+					
+				} else {
+
+					northwest = loc4;
+					u4 = true;
+				}
+			} else if (x3 < x4 && z3 < z4) {
+
+				northwest = loc3;
+				u3 = true;
+			} else {
+
+				northwest = loc4;
+				u4 = true;
+			}
+
+		} else if (x2 < x3 && z2 < z3) {
+
+			if (x2 < x4 && z2 < z4) {
+
+				northwest = loc2;
+				u2 = true;
+			} else {
+
+				northwest = loc4;
+				u4 = true;
+			}
+
+		} else if (x3 < x4 && z3 < z4) {
+
+			northwest = loc3;
+			u3 = true;
+		} else {
+
+			northwest = loc4;
+			u4 = true;
+		}
+
+		if (x1 > x2 && z1 > z2) {
+
+			if (x1 > x3 && z1 > z3) {
+
+				if (x1 > x4 && z1 > z4) {
+
+					northwest = loc1;
+					u1 = true;
+				} else {
+
+					northwest = loc4;
+					u4 = true;
+				}
+			} else if (x3 > x4 && z3 > z4) {
+
+				northwest = loc3;
+				u3 = true;
+			} else {
+
+				northwest = loc4;
+				u4 = true;
+			}
+
+		} else if (x2 > x3 && z2 > z3) {
+
+			if (x2 > x4 && z2 > z4) {
+
+				northwest = loc2;
+				u2 = true;
+			} else {
+
+				northwest = loc4;
+				u4 = true;
+			}
+
+		} else if (x3 > x4 && z3 > z4) {
+
+			northwest = loc3;
+			u3 = true;
+		} else {
+
+			northwest = loc4;
+			u4 = true;
+		}
+
+		if (x1 > x2 && z1 < z2) {
+
+			if (x1 > x3 && z1 < z3) {
+
+				if (x1 > x4 && z1 < z4) {
+
+					northeast = loc1;
+					u1 = true;
+				} else {
+
+					northeast = loc4;
+					u4 = true;
+				}
+			} else if (x3 > x4 && z3 < z4) {
+
+				northeast = loc3;
+				u3 = true;
+			} else {
+
+				northeast = loc4;
+				u4 = true;
+			}
+
+		} else if (x2 > x3 && z2 < z3) {
+
+			if (x2 > x4 && z2 < z4) {
+
+				northeast = loc2;
+				u2 = true;
+			} else {
+
+				northeast = loc4;
+				u4 = true;
+			}
+
+		} else if (x3 > x4 && z3 < z4) {
+
+			northeast = loc3;
+			u3 = true;
+		} else {
+
+			northeast = loc4;
+			u4 = true;
+		}
+
+		if (x1 < x2 && z1 > z2) {
+
+			if (x1 < x3 && z1 > z3) {
+
+				if (x1 < x4 && z1 > z4) {
+
+					southwest = loc1;
+					u1 = true;
+				} else {
+
+					southwest = loc4;
+					u4 = true;
+				}
+			} else if (x3 < x4 && z3 > z4) {
+
+				southwest = loc3;
+				u3 = true;
+			} else {
+
+				southwest = loc4;
+				u4 = true;
+			}
+
+		} else if (x2 < x3 && z2 > z3) {
+
+			if (x2 < x4 && z2 > z4) {
+
+				southwest = loc2;
+				u2 = true;
+			} else {
+
+				southwest = loc4;
+				u4 = true;
+			}
+
+		} else if (x3 < x4 && z3 > z4) {
+
+			southwest = loc3;
+			u3 = true;
+		} else {
+
+			southwest = loc4;
+			u4 = true;
+		}
 		
-		return null;
+		if(!u1) southeast = loc1;
+		else if(!u2) southeast = loc2;
+		else if(!u3) southeast = loc3;
+		else if(!u4) southeast = loc4;
+		
+		directions.add(northeast);
+		directions.add(southeast);
+		directions.add(northwest);
+		directions.add(southwest);
+		
+		return directions;
+
 	}
 }

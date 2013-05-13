@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -44,7 +44,7 @@ public abstract class TrainStation {
 	protected volatile List<Player> visitors = new ArrayList<Player>();
 	protected List<HumanEntity> workers = new ArrayList<HumanEntity>();
 	protected Map<CardinalMarker, Location> corners;
-	protected Set<Location> perimeter;
+	protected List<Location> perimeter;
 	protected World world;
 	protected List<Chunk> chunks;
 	protected List<MinecartGroup> trains;
@@ -58,11 +58,10 @@ public abstract class TrainStation {
 	 * @param stationName
 	 * @param corners
 	 */
-	public TrainStation(final JavaPlugin plugin, String stationName, Map<CardinalMarker, Location> corners) { 
+	public TrainStation(final JavaPlugin plugin, String stationName, Map<CardinalMarker, Location> corners, World world) { 
 		if(db == null) db = new TrainDB(plugin);
 		this.stationName = stationName;
 		this.corners = corners;
-		World world = null;
 		List<Chunk> chunk = new ArrayList<Chunk>();
 		for(Location loc : corners.values()) {
 			if(world == null) world = loc.getWorld();
@@ -70,13 +69,20 @@ public abstract class TrainStation {
 		}
 		this.world = world;
 		this.chunks = chunk;
+		Bukkit.getLogger().info("Creating a perimeter...");
 		this.perimeter = generatePerimeter();
+		Bukkit.getLogger().info("Finding Signs...");
 		initSigns();
+		Bukkit.getLogger().info("There are " + signList.size() + " chunks");
+		Bukkit.getLogger().info("Finding workers...");
 		findWorkers();
+		Bukkit.getLogger().info("Finding players...");
 		findPlayers();
 		
+		Bukkit.getLogger().info("Adding to listener and listing...");
 		//Add to the list of stations! IMPORTANT
 		trainStations.add(this);
+		TrainStationListener.addStation(this);
 	}
 	
 	protected TrainStation(final JavaPlugin plugin) {
@@ -125,7 +131,7 @@ public abstract class TrainStation {
 	 * North = Z - 1
 	 * @return
 	 */
-	public Set<Location> generatePerimeter() {
+	public List<Location> generatePerimeter() {
 
 		//Get all of the locations for each corner.
 		Location northEast = corners.get(CardinalMarker.NORTH_EAST_CORNER),
@@ -135,7 +141,7 @@ public abstract class TrainStation {
 
 		//Iterate through each line of locations, and add them to the perimeter. This should make a rectangle.
 		//TODO make a cube, instead of a rectangle, if possible or necessary.
-		Set<Location> perimeter = new TreeSet<Location>();
+		List<Location> perimeter = new ArrayList<Location>();
 		for(int i = northWest.getBlockZ() + 1; i < southWest.getBlockZ(); i++) {
 			perimeter.add(new Location(this.world, northWest.getBlockX(), northWest.getBlockY(), i));
 		}
@@ -299,7 +305,7 @@ public abstract class TrainStation {
 		this.perimeter = this.generatePerimeter();
 	}
 
-	public Set<Location> getPerimeter() {
+	public List<Location> getPerimeter() {
 		return perimeter;
 	}
 

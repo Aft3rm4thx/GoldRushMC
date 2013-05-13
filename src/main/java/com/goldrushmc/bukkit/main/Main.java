@@ -8,7 +8,6 @@ import javax.persistence.PersistenceException;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.goldrushmc.bukkit.commands.AddTrain;
 import com.goldrushmc.bukkit.commands.CreateTrainStation;
 import com.goldrushmc.bukkit.commands.StationWand;
 import com.goldrushmc.bukkit.db.BankTbl;
@@ -40,12 +39,14 @@ public final class Main extends JavaPlugin{
 		
 //		getCommand("Train").setExecutor(new CreateTrain(this));
 		getCommand("StationWand").setExecutor(new StationWand(this));
-		getCommand("Cart").setExecutor(new AddTrain(this));
+//		getCommand("Cart").setExecutor(new AddTrain(this));
 		getCommand("Station").setExecutor(new CreateTrainStation(this));
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvents(tl, this);
 		pm.registerEvents(wl, this);
 		pm.registerEvents(tsl, this);
+		
+		tsl.populate();
 		
 		getLogger().info(getDescription().getName() + " Enabled!");		
 	}

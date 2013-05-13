@@ -37,7 +37,7 @@ commands:
 #   permission: goldrushmc.train.cart
 #   usage: /<command> [trainName, typeOfCart]
  
-   station:
+  station:
    description: Tree for station creation.
    aliases: [station, st]
    permission: goldrushmc.station.create
@@ -49,14 +49,15 @@ permissions:
     children:
 #      goldrushmc.train.create: true
 #      goldrushmc.train.trainwand: true
-      goldrushmc.station.create: true
-  goldrushmc.train.create:
-    description: Allows you to create trains
-    default: true
+     goldrushmc.station.create: true
 
-  goldrushmc.station.stationwand:
-    description: Allows you to spawn the train wand
-    default: true
+#  goldrushmc.train.create:
+#    description: Allows you to create trains
+#    default: true
+
+#  goldrushmc.station.stationwand:
+#    description: Allows you to spawn the train wand
+#    default: true
 
 #  goldrushmc.train.trainwand:
 #    description: Allows you to spawn the train wand
