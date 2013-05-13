@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 name: GoldRushMC
 version: 1.1
 description: The plugin created to facilitate the Gold Rush Server Features
@@ -66,3 +67,11 @@ permissions:
   goldrushmc.station.create:
     description: Allows you to spawn the station wand
     default: true
+=======
+name: CollapsingTunnels
+version: 0.1
+main: com.goldrushmc.bukkit.CollapsingTunnels.CollapsingTunnels
+author: 1SmallVille1
+commands:
+    fall:
+>>>>>>> master
