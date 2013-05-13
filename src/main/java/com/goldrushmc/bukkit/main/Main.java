@@ -37,9 +37,7 @@ public final class Main extends JavaPlugin{
 	public void onEnable() {
 		setupDB();
 		
-//		getCommand("Train").setExecutor(new CreateTrain(this));
 		getCommand("StationWand").setExecutor(new StationWand(this));
-//		getCommand("Cart").setExecutor(new AddTrain(this));
 		getCommand("Station").setExecutor(new CreateTrainStation(this));
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvents(tl, this);
