@@ -3,12 +3,17 @@ version: 1.2
 description: The plugin created to facilitate the Gold Rush Server Features
 author: Diremonsoon, lexwebb, 1SmallVille1
 database: true
+#Make sure you have a database ready!!! otherwise errors will fly!
 #website: http://forums.bukkit.org/threads/ GET NEW WEBSITE ADDRESS AND APPEND
 
 main: com.goldrushmc.bukkit.main.Main
 
 commands:
   fall:
+   description: Test command?
+   aliases: [fall]
+   permission: goldrushmc.collapsetest
+   usage: /<command>
 
   stationwand:
    description: Wand which is used for marking the train stations
@@ -22,11 +27,24 @@ commands:
    permission: goldrushmc.station.create
    usage: /<command> [stationType, stationName]
    
+  gun:
+   description: Get your gun
+   aliases: [gun]
+   permission: golrushmc.guns
+   usage: /<command>
+   
 permissions:
   goldrushmc.*:
     description: Gives access to all commands to the plugin
     children:
      goldrushmc.station.create: true
+     goldrushmc.guns: true
   goldrushmc.station.create:
     description: Allows you to spawn the station wand and make stations.
     default: true
+  goldrushmc.guns:
+   description: Allows access to guns
+   default: true
+  goldrushmc.collapsetest
+   description: Tests collapse tool
+   default: true
