@@ -8,6 +8,7 @@ import javax.persistence.PersistenceException;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.goldrushmc.bukkit.bank.InventoryLis;
 import com.goldrushmc.bukkit.commands.CreateTrainStation;
 import com.goldrushmc.bukkit.commands.StationWand;
 import com.goldrushmc.bukkit.db.BankTbl;
@@ -42,6 +43,7 @@ public final class Main extends JavaPlugin{
 	public final TunnelsListener tunnel = new TunnelsListener(this);
 	public final GunLis gl = new GunLis(this);
 	public final PanningLis pl = new PanningLis(this);
+	public final InventoryLis il = new InventoryLis(this);	
 
 	@Override
 	public void onEnable() {
@@ -62,6 +64,7 @@ public final class Main extends JavaPlugin{
 		pm.registerEvents(tsl, this);
 		pm.registerEvents(gl, this);
 		pm.registerEvents(pl, this);
+		pm.registerEvents(il, this);
 		
 		//Add settings
 		SettingsManager settings = SettingsManager.getInstance();
