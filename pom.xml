@@ -8,9 +8,8 @@
 
 	<repositories>
 		<repository>
-			<id>bukkit</id>
-			<name>craftbukkit</name>
-			<url>https://github.com/Bukkit/CraftBukkit.git</url>
+			<id>bukkit-repo</id>
+			<url>http://repo.bukkit.org/content/groups/public/</url>
 		</repository>
 	</repositories>
 
@@ -18,9 +17,14 @@
 		<dependency>
 			<groupId>org.bukkit</groupId>
 			<artifactId>bukkit</artifactId>
-			<version>1.5.1-R0.3-SNAPSHOT</version>
-			<type>jar</type>
-			<scope>compile</scope>
+			<version>1.5.1-R0.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.bukkit</groupId>
+			<artifactId>craftbukkit</artifactId>
+			<version>1.5.2-R0.2-SNAPSHOT</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
@@ -32,6 +36,7 @@
 
 	<build>
 		<finalName>GoldRushMC</finalName>
+		<defaultGoal>clean install</defaultGoal>
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
