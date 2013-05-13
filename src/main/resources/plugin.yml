@@ -1,6 +1,77 @@
+<<<<<<< HEAD
+name: GoldRushMC
+version: 1.2
+description: The plugin created to facilitate the Gold Rush Server Features
+author: Diremonsoon, lexwebb, 1SmallVille1
+database: true
+#website: http://forums.bukkit.org/threads/ GET NEW WEBSITE ADDRESS AND APPEND
+
+main: com.goldrushmc.bukkit.main.Main
+
+commands:
+#  train:
+#   description: Tree for train creation
+#   aliases: [train]
+#   permission: goldrushmc.train.create
+#   usage: |
+#           Two types of train: Public or Standard
+#           /<command> [Standard, trainName, trainType, speedLimit]
+#           /<command> [Custom, trainName, trainType, numberOfPassengers, numberOfChestCarts, speedLimit]
+#           /<command> [Passenger, trainName, trainType, numberOfPassengers, speedLimit]
+#           /<command> [Storage, trainName, trainType, numberOfStorageCarts, speedLimit]
+   
+  stationwand:
+   description: Wand which is used for marking the train stations
+   aliases: [stationtool, stool]
+   permission: goldrushmc.station.create
+   usage: /<command>
+
+#  trainwand:
+#   description: Wand which is used for marking the train spawn locations
+#   aliases: [wand, traintool]
+#   permission: goldrushmc.train.traintool
+#   usage: /<command>
+   
+#  cart:
+#   description: 
+#   aliases: [cart, addcart, c]
+#   permission: goldrushmc.train.cart
+#   usage: /<command> [trainName, typeOfCart]
+ 
+  station:
+   description: Tree for station creation.
+   aliases: [station, st]
+   permission: goldrushmc.station.create
+   usage: /<command> [stationType, stationName]
+   
+permissions:
+  goldrushmc.*:
+    description: Gives access to all commands to the plugin
+    children:
+#      goldrushmc.train.create: true
+#      goldrushmc.train.trainwand: true
+     goldrushmc.station.create: true
+
+#  goldrushmc.train.create:
+#    description: Allows you to create trains
+#    default: true
+
+#  goldrushmc.station.stationwand:
+#    description: Allows you to spawn the train wand
+#    default: true
+
+#  goldrushmc.train.trainwand:
+#    description: Allows you to spawn the train wand
+#    default: true
+
+  goldrushmc.station.create:
+    description: Allows you to spawn the station wand and make stations.
+    default: true
+=======
 name: CollapsingTunnels
 version: 0.1
 main: com.goldrushmc.bukkit.CollapsingTunnels.CollapsingTunnels
 author: 1SmallVille1
 commands:
     fall:
+>>>>>>> origin/master
