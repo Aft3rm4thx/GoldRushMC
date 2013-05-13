@@ -9,22 +9,17 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
-public class TunnelsListener implements Listener, CommandExecutor {
+import com.goldrushmc.bukkit.defaults.DefaultListener;
 
-	public Plugin plugin;
+public class TunnelsListener extends DefaultListener {
 
-	TunnelsListener(Plugin instance) {
-
-		this.plugin = instance;
+	public TunnelsListener(JavaPlugin instance) {
+		super(instance);
 
 	}
 
@@ -84,7 +79,7 @@ public class TunnelsListener implements Listener, CommandExecutor {
 		}
 	}
 
-	public void loopAndFall(Location loc1, Location loc2, World w) {
+	public static void loopAndFall(Location loc1, Location loc2, World w) {
 
 		Bukkit.getServer().broadcastMessage("started loop");
 
@@ -136,38 +131,4 @@ public class TunnelsListener implements Listener, CommandExecutor {
 		}
 
 	}
-
-	public boolean onCommand(CommandSender sender, Command cmd, String label,
-			String[] args) {
-
-		if (cmd.getName().equalsIgnoreCase("fall")) {
-
-			if (sender instanceof Player) {
-
-				Player player = (Player) sender;
-
-				int x = player.getLocation().getBlockX(), y = player
-						.getLocation().getBlockY(), z = player.getLocation()
-						.getBlockZ();
-
-				World w = player.getWorld();
-
-				Location loc1 = new Location(w, x
-						- this.plugin.getConfig().getInt("radius") / 2, y, z
-						- this.plugin.getConfig().getInt("radius") / 2);
-
-				Location loc2 = new Location(w, x
-						+ this.plugin.getConfig().getInt("radius") / 2, y
-						+ this.plugin.getConfig().getInt("radius"), z
-						+ this.plugin.getConfig().getInt("radius") / 2);
-
-				loopAndFall(loc1, loc2, w);
-
-			}
-
-		}
-
-		return false;
-	}
-
 }

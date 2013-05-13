@@ -23,6 +23,9 @@ import com.goldrushmc.bukkit.defaults.TrainDB;
 import com.goldrushmc.bukkit.train.TrainLis;
 import com.goldrushmc.bukkit.train.WandLis;
 import com.goldrushmc.bukkit.train.station.TrainStationListener;
+import com.goldrushmc.bukkit.tunnelcollapse.SettingsManager;
+import com.goldrushmc.bukkit.tunnelcollapse.TunnelCollapseCommand;
+import com.goldrushmc.bukkit.tunnelcollapse.TunnelsListener;
 
 
 
@@ -32,21 +35,31 @@ public final class Main extends JavaPlugin{
 	public final WandLis wl = new WandLis(this);
 	public final TrainStationListener tsl = new TrainStationListener(this);
 	public final TrainDB db = new TrainDB(this);
+	TunnelsListener tunnel = new TunnelsListener(this);
 
 	@Override
 	public void onEnable() {
 		setupDB();
 		
+		//Add commands
 		getCommand("StationWand").setExecutor(new StationWand(this));
 		getCommand("Station").setExecutor(new CreateTrainStation(this));
+		getCommand("fall").setExecutor(new TunnelCollapseCommand(this));
+		
+		//Register listeners
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvents(tl, this);
 		pm.registerEvents(wl, this);
 		pm.registerEvents(tsl, this);
 		
+		//Add settings
+		SettingsManager settings = SettingsManager.getInstance();
+		settings.setup(this);
+		
+		//Populate the train station listener maps
 		tsl.populate();
 		
-		getLogger().info(getDescription().getName() + " Enabled!");		
+		getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");		
 	}
 	
 	private void setupDB() {

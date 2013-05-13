@@ -5,8 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public abstract class DefaultListener implements Listener {
 
-	@SuppressWarnings("unused")
-	private final JavaPlugin plugin;
+	protected final JavaPlugin plugin;
 	
 	public DefaultListener(JavaPlugin plugin) {
 		this.plugin = plugin;
