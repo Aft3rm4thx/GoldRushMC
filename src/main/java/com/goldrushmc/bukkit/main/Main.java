@@ -23,6 +23,8 @@ import com.goldrushmc.bukkit.defaults.TrainDB;
 import com.goldrushmc.bukkit.train.TrainLis;
 import com.goldrushmc.bukkit.train.WandLis;
 import com.goldrushmc.bukkit.train.station.TrainStationListener;
+import com.goldrushmc.bukkit.guns.GunLis;
+import com.goldrushmc.bukkit.guns.GunTool;
 import com.goldrushmc.bukkit.tunnelcollapse.SettingsManager;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelCollapseCommand;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelsListener;
@@ -35,7 +37,8 @@ public final class Main extends JavaPlugin{
 	public final WandLis wl = new WandLis(this);
 	public final TrainStationListener tsl = new TrainStationListener(this);
 	public final TrainDB db = new TrainDB(this);
-	TunnelsListener tunnel = new TunnelsListener(this);
+	public final TunnelsListener tunnel = new TunnelsListener(this);
+	public final GunLis gl = new GunLis(this);
 
 	@Override
 	public void onEnable() {
@@ -44,13 +47,15 @@ public final class Main extends JavaPlugin{
 		//Add commands
 		getCommand("StationWand").setExecutor(new StationWand(this));
 		getCommand("Station").setExecutor(new CreateTrainStation(this));
-		getCommand("fall").setExecutor(new TunnelCollapseCommand(this));
+		getCommand("Fall").setExecutor(new TunnelCollapseCommand(this));
+		getCommand("Gun").setExecutor(new GunTool(this));
 		
 		//Register listeners
 		PluginManager pm = getServer().getPluginManager();
 		pm.registerEvents(tl, this);
 		pm.registerEvents(wl, this);
 		pm.registerEvents(tsl, this);
+		pm.registerEvents(gl, this);
 		
 		//Add settings
 		SettingsManager settings = SettingsManager.getInstance();
