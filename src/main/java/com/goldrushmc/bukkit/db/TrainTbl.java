@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.train.db;
+package com.goldrushmc.bukkit.db;
 
 import java.util.Set;
 
@@ -15,13 +15,13 @@ import com.avaje.ebean.validation.NotEmpty;
 
 @Entity
 @Table(name = "train_tbl")
-public class Trains {
+public class TrainTbl {
 	
 	@Id @GeneratedValue private int id;
-	@Column(name = "TRAIN_NAME") @NotEmpty private String trainName;
+	@Column(name = "TRAIN_NAME") @NotEmpty private String name;
 	@Column(name = "WORLD") @NotEmpty private String worldName;
-	@OneToMany(mappedBy = "train") private Set<TrainSchedule> schedule;
-	@OneToOne private TrainStatus status;
+	@OneToMany(mappedBy = "train") private Set<TrainScheduleTbl> schedule;
+	@OneToOne private TrainStatusTbl status;
 	@ManyToOne private TrainStationTbl station;
 	
 	public int getId() {
@@ -31,21 +31,21 @@ public class Trains {
 		this.id = id;
 	}
 	public String getTrainName() {
-		return trainName;
+		return name;
 	}
 	public void setTrainName(String trainName) {
-		this.trainName = trainName;
+		this.name = trainName;
 	}
-	public Set<TrainSchedule> getSchedule() {
+	public Set<TrainScheduleTbl> getSchedule() {
 		return schedule;
 	}
-	public void setSchedule(Set<TrainSchedule> schedule) {
+	public void setSchedule(Set<TrainScheduleTbl> schedule) {
 		this.schedule = schedule;
 	}
-	public TrainStatus getStatus() {
+	public TrainStatusTbl getStatus() {
 		return status;
 	}
-	public void setStatus(TrainStatus status) {
+	public void setStatus(TrainStatusTbl status) {
 		this.status = status;
 	}
 	public String getWorldName() {

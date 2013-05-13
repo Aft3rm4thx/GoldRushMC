@@ -19,28 +19,50 @@ commands:
            /<command> [Passenger, trainName, trainType, numberOfPassengers, speedLimit]
            /<command> [Storage, trainName, trainType, numberOfStorageCarts, speedLimit]
    
-  wand:
-   description: Wand which is used for marking the train spawn locations
-   aliases: [wand, traintool]
-   permission: goldrushmc.train.wand
+  stationwand:
+   description: Wand which is used for marking the train stations
+   aliases: [stationtool, stool]
+   permission: goldrushmc.station.stationtool
    usage: /<command>
 
+  trainwand:
+   description: Wand which is used for marking the train spawn locations
+   aliases: [wand, traintool]
+   permission: goldrushmc.train.traintool
+   usage: /<command>
+   
   cart:
    description: 
    aliases: [cart, addcart, c]
    permission: goldrushmc.train.add
    usage: /<command> [trainName, typeOfCart]
  
+   station:
+   description: Tree for station creation.
+   aliases: [station, st]
+   permission: goldrushmc.station.create
+   usage: /<command> [stationType, stationName]
+   
 permissions:
   goldrushmc.*:
     description: Gives access to all commands to the plugin
     children:
       goldrushmc.train.create: true
-      goldrushmc.train.wand: true
+      goldrushmc.train.stationwand: true
+      goldrushmc.train.trainwand: true
+      goldrushmc.station.create: true
   goldrushmc.train.create:
     description: Allows you to create trains
     default: true
 
-  goldrushmc.train.wand:
+  goldrushmc.station.stationwand:
     description: Allows you to spawn the train wand
+    default: true
+
+  goldrushmc.train.trainwand:
+    description: Allows you to spawn the train wand
+    default: true
+
+  goldrushmc.station.create:
+    description: Allows you to spawn the station wand
     default: true

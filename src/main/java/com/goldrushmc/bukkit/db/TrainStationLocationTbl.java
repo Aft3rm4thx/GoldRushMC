@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.train.db;
+package com.goldrushmc.bukkit.db;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,7 +12,7 @@ import com.avaje.ebean.validation.NotNull;
 
 @Entity
 @Table(name = "station_location_tbl")
-public class TrainStationLocation {
+public class TrainStationLocationTbl {
 
 	@Id @GeneratedValue private int id;
 	@Column(name = "CORNER") @NotEmpty private String corner;

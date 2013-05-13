@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.train.db;
+package com.goldrushmc.bukkit.db;
 
 import java.util.Set;
 
@@ -13,11 +13,11 @@ import com.avaje.ebean.validation.NotNull;
 
 @Entity
 @Table(name = "status_tbl")
-public class TrainStatus {
+public class TrainStatusTbl {
 
 	@Id @GeneratedValue private int id;
 	@Column(name = "STATUS") @NotNull private String status;
-	@OneToMany(mappedBy = "status") private Set<Trains> trains;
+	@OneToMany(mappedBy = "status") private Set<TrainTbl> trains;
 	
 	public int getId() {
 		return id;
@@ -31,10 +31,10 @@ public class TrainStatus {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	public Set<Trains> getTrains() {
+	public Set<TrainTbl> getTrains() {
 		return trains;
 	}
-	public void setTrains(Set<Trains> trains) {
+	public void setTrains(Set<TrainTbl> trains) {
 		this.trains = trains;
 	}
 }

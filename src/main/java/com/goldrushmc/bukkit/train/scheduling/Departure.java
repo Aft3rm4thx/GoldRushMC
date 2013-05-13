@@ -22,7 +22,7 @@ public class Departure implements Runnable {
 		MinecartGroup[] trains = station.getDepartingTrains();
 		for(int i = 0; i < trains.length; i++) {
 			trains[i].setForwardForce(0.4);
-//			Trains train = db.getTrain(trains[i].getProperties().getTrainName());
+//			TrainTbl train = db.getTrain(trains[i].getProperties().getTrainName());
 			db.getStatuses();
 		}
 

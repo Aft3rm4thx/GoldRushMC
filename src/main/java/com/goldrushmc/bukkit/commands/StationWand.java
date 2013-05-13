@@ -13,9 +13,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 
-public class TrainWand extends CommandDefault {
+public class StationWand extends CommandDefault {
 
-	public TrainWand(JavaPlugin plugin) {
+	public StationWand(JavaPlugin plugin) {
 		super(plugin);
 	}
 

@@ -18,11 +18,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
+import com.goldrushmc.bukkit.db.TrainScheduleTbl;
+import com.goldrushmc.bukkit.db.TrainTbl;
 import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
 import com.goldrushmc.bukkit.defaults.TrainDB;
 import com.goldrushmc.bukkit.train.CardinalMarker;
-import com.goldrushmc.bukkit.train.db.TrainSchedule;
-import com.goldrushmc.bukkit.train.db.Trains;
 import com.goldrushmc.bukkit.train.signs.ISignLogic;
 import com.goldrushmc.bukkit.train.signs.SignLogic;
 
@@ -87,10 +87,10 @@ public abstract class TrainStation {
 		long current = this.world.getTime();
 		MinecartGroup[] toDepart = new MinecartGroup[trains.size()];
 		for(MinecartGroup train : trains) {
-			Trains check = db.getTrain(train.getProperties().getTrainName());
-			Set<TrainSchedule> schedules = check.getSchedule();
+			TrainTbl check = db.getTrain(train.getProperties().getTrainName());
+			Set<TrainScheduleTbl> schedules = check.getSchedule();
 			int i = 0;
-			for(TrainSchedule schedule : schedules) {
+			for(TrainScheduleTbl schedule : schedules) {
 				if(schedule.isNext()) {
 					long departure = schedule.getTimeToDepart();
 					if(departure == current) {

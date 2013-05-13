@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.train.db;
+package com.goldrushmc.bukkit.db;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,16 +9,19 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.avaje.ebean.validation.NotNull;
+import com.goldrushmc.bukkit.train.station.TrainStation;
 
 @Entity
 @Table(name = "train_schedule_tbl")
-public class TrainSchedule {
+public class TrainScheduleTbl {
 
 	@Id @GeneratedValue private int id;
 	@Column(name = "DEPART_TIME") @NotNull  private long timeToDepart;
+	@ManyToOne TrainStation destination;
+	@ManyToOne TrainStation origin;
 	@ManyToOne @Column(name = "NEXT_STOP") TrainStationTbl station;
 	@Column(name = "IS_NEXT") private boolean isNext;
-	@OneToOne private Trains train;
+	@OneToOne private TrainTbl train;
 	
 	
 	public int getId() {
@@ -33,10 +36,10 @@ public class TrainSchedule {
 	public void setTimeToDepart(long timeToDepart) {
 		this.timeToDepart = timeToDepart;
 	}
-	public Trains getTrain() {
+	public TrainTbl getTrain() {
 		return train;
 	}
-	public void setTrain(Trains train) {
+	public void setTrain(TrainTbl train) {
 		this.train = train;
 	}
 	public boolean isNext() {
@@ -50,5 +53,17 @@ public class TrainSchedule {
 	}
 	public void setStation(TrainStationTbl station) {
 		this.station = station;
+	}
+	public TrainStation getDestination() {
+		return destination;
+	}
+	public void setDestination(TrainStation destination) {
+		this.destination = destination;
+	}
+	public TrainStation getOrigin() {
+		return origin;
+	}
+	public void setOrigin(TrainStation origin) {
+		this.origin = origin;
 	}
 }

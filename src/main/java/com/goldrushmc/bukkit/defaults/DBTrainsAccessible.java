@@ -4,61 +4,61 @@ import java.util.List;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Query;
-import com.goldrushmc.bukkit.train.db.TrainSchedule;
-import com.goldrushmc.bukkit.train.db.TrainStatus;
-import com.goldrushmc.bukkit.train.db.Trains;
+import com.goldrushmc.bukkit.db.TrainScheduleTbl;
+import com.goldrushmc.bukkit.db.TrainStatusTbl;
+import com.goldrushmc.bukkit.db.TrainTbl;
 
 public interface DBTrainsAccessible {
 
 	/**
-	 * Queries the DB for the TrainSchedule class.
+	 * Queries the DB for the TrainScheduleTbl class.
 	 * 
 	 * @return
 	 */
-	Query<TrainSchedule> querySchedule();
+	Query<TrainScheduleTbl> querySchedule();
 	
 	/**
-	 * Queries the DB for the Trains class.
+	 * Queries the DB for the TrainTbl class.
 	 * 
 	 * @return
 	 */
-	Query<Trains> queryTrains();
+	Query<TrainTbl> queryTrains();
 	
 	/**
-	 * Queries the DB for the TrainStatus class.
+	 * Queries the DB for the TrainStatusTbl class.
 	 * 
 	 * @return
 	 */
-	Query<TrainStatus> queryStatus();
+	Query<TrainStatusTbl> queryStatus();
 	
 	/**
 	 * Gets all of the current schedules for all trains.
 	 * 
 	 * @return
 	 */	
-	List<TrainSchedule> getSchedules();
+	List<TrainScheduleTbl> getSchedules();
 	
 	/**
 	 * Gets all of the current trains in the server.
 	 * 
 	 * @return
 	 */
-	List<Trains> getTrains();
+	List<TrainTbl> getTrains();
 	
 	/**
 	 * Gets all of the current statuses.
 	 * 
 	 * @return
 	 */
-	List<TrainStatus> getStatuses();
+	List<TrainStatusTbl> getStatuses();
 	
 	/**
-	 * Gets the next train schedule for the specified train via {@link Trains} class.
+	 * Gets the next train schedule for the specified train via {@link TrainTbl} class.
 	 * 
-	 * @param train The {@link Trains} class specified.
+	 * @param train The {@link TrainTbl} class specified.
 	 * @return
 	 */
-	TrainSchedule getNextDeparture(Trains train);
+	TrainScheduleTbl getNextDeparture(TrainTbl train);
 	
 	/**
 	 * Gets the next train schedule for the specified train via Train Name.
@@ -66,31 +66,31 @@ public interface DBTrainsAccessible {
 	 * @param trainName The name of the Train.
 	 * @return
 	 */
-	TrainSchedule getNextDeparture(String trainName);
+	TrainScheduleTbl getNextDeparture(String trainName);
 	
 	/**
-	 * Gets a {@link Trains} class based off of its name.
+	 * Gets a {@link TrainTbl} class based off of its name.
 	 * 
 	 * @param trainName The name of the train.
 	 * @return
 	 */
-	Trains getTrain(String trainName);
+	TrainTbl getTrain(String trainName);
 	
 	/**
-	 * Gets the train's current status via {@link Trains} class.
+	 * Gets the train's current status via {@link TrainTbl} class.
 	 * 
-	 * @param train The {@link Trains} class specified.
+	 * @param train The {@link TrainTbl} class specified.
 	 * @return
 	 */
-	TrainStatus getTrainStatus(Trains train);
+	TrainStatusTbl getTrainStatus(TrainTbl train);
 	
 	/**
 	 * Gets the train's current status via Train Name.
 	 * 
-	 * @param trainName The {@link Trains} class specified.
+	 * @param trainName The {@link TrainTbl} class specified.
 	 * @return
 	 */
-	TrainStatus getTrainStatus(String trainName);
+	TrainStatusTbl getTrainStatus(String trainName);
 	
 	/**
 	 * Gets the Database instance of the plugin.

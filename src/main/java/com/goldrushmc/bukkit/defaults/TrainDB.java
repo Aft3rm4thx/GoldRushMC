@@ -6,9 +6,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Query;
-import com.goldrushmc.bukkit.train.db.TrainSchedule;
-import com.goldrushmc.bukkit.train.db.TrainStatus;
-import com.goldrushmc.bukkit.train.db.Trains;
+import com.goldrushmc.bukkit.db.TrainScheduleTbl;
+import com.goldrushmc.bukkit.db.TrainStatusTbl;
+import com.goldrushmc.bukkit.db.TrainTbl;
 
 public class TrainDB implements DBTrainsAccessible {
 
@@ -19,60 +19,60 @@ public class TrainDB implements DBTrainsAccessible {
 	}
 
 	@Override
-	public Query<TrainSchedule> querySchedule() {
-		return getDB().find(TrainSchedule.class);
+	public Query<TrainScheduleTbl> querySchedule() {
+		return getDB().find(TrainScheduleTbl.class);
 	}
 
 	@Override
-	public Query<Trains> queryTrains() {
-		return getDB().find(Trains.class);
+	public Query<TrainTbl> queryTrains() {
+		return getDB().find(TrainTbl.class);
 	}
 
 	@Override
-	public Query<TrainStatus> queryStatus() {
-		return getDB().find(TrainStatus.class);
+	public Query<TrainStatusTbl> queryStatus() {
+		return getDB().find(TrainStatusTbl.class);
 	}
 
 	@Override
-	public List<TrainSchedule> getSchedules() {
+	public List<TrainScheduleTbl> getSchedules() {
 		return querySchedule().findList();
 	}
 
 	@Override
-	public List<Trains> getTrains() {
+	public List<TrainTbl> getTrains() {
 		return queryTrains().findList();
 	}
 
 	@Override
-	public List<TrainStatus> getStatuses() {
+	public List<TrainStatusTbl> getStatuses() {
 		return queryStatus().findList();
 	}
 
 	@Override
-	public TrainSchedule getNextDeparture(Trains train) {
-		for(TrainSchedule ts : train.getSchedule()) {
+	public TrainScheduleTbl getNextDeparture(TrainTbl train) {
+		for(TrainScheduleTbl ts : train.getSchedule()) {
 			if(ts.isNext()) return ts;
 		}
 		return null;
 	}
 
 	@Override
-	public TrainSchedule getNextDeparture(String trainName) {
+	public TrainScheduleTbl getNextDeparture(String trainName) {
 		return getNextDeparture(getTrain(trainName));
 	}
 
 	@Override
-	public Trains getTrain(String trainName) {
+	public TrainTbl getTrain(String trainName) {
 		return queryTrains().where().ieq("TRAIN_NAME", trainName).findUnique();
 	}
 
 	@Override
-	public TrainStatus getTrainStatus(Trains train) {
+	public TrainStatusTbl getTrainStatus(TrainTbl train) {
 		return train.getStatus();
 	}
 
 	@Override
-	public TrainStatus getTrainStatus(String trainName) {
+	public TrainStatusTbl getTrainStatus(String trainName) {
 		return getTrainStatus(getTrain(trainName));
 	}
 

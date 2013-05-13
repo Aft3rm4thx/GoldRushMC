@@ -21,14 +21,13 @@ import com.goldrushmc.bukkit.train.station.TrainStationTransport;
 /**
  * For the command "CreateStation"
  * 
- * @author Lucas
+ * @author Diremonsoon
  *
  */
 public class CreateTrainStation extends CommandDefault {
 
 	public CreateTrainStation(JavaPlugin plugin) {
 		super(plugin);
-		// TODO Auto-generated constructor stub
 	}
 	
 	/**

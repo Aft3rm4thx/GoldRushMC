@@ -51,7 +51,7 @@ public class TrainFactory {
 	/**
 	 * <p><b>FOR TESTING PURPOSES ONLY</b></p>
 	 * 
-	 * <p>Use this to create new Standard Trains on the map.</p>
+	 * <p>Use this to create new Standard TrainTbl on the map.</p>
 	 * <p>This is configured so trains ALWAYS SPAWN RIGHT TO LEFT</p>
 	 * <p>This means that the train furnace will spawn on the very left, to the perspective of the creator</p>
 	 * 
@@ -91,7 +91,7 @@ public class TrainFactory {
 
 
 	/**
-	 * Use this to create new Custom Trains on the map.
+	 * Use this to create new Custom TrainTbl on the map.
 	 * 
 	 * <p><b>Custom trains have:</b></p>
 	 * <ol>
@@ -150,7 +150,7 @@ public class TrainFactory {
 	}
 
 	/**
-	 *  Use this to create new Passenger Trains on the map.
+	 *  Use this to create new Passenger TrainTbl on the map.
 	 *  
 	 * <p><b>Passenger trains have:</b></p>
 	 * <ol>
@@ -204,7 +204,7 @@ public class TrainFactory {
 	}
 
 	/**
-	 * Use this to create new Storage Trains on the map.
+	 * Use this to create new Storage TrainTbl on the map.
 	 * 
 	 * <p><b>Storage trains have:</b></p>
 	 * <ol>
