@@ -39,6 +39,7 @@ permissions:
     children:
      goldrushmc.station.create: true
      goldrushmc.guns: true
+     goldrushmc.collapsetest: true
   goldrushmc.station.create:
     description: Allows you to spawn the station wand and make stations.
     default: true
