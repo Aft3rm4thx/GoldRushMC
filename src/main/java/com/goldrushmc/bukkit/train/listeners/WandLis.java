@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.train;
+package com.goldrushmc.bukkit.train.listeners;
 
 import java.util.ArrayList;
 import java.util.HashMap;

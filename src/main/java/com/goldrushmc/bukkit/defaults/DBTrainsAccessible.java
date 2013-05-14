@@ -5,11 +5,17 @@ import java.util.List;
 import com.avaje.ebean.EbeanServer;
 import com.avaje.ebean.Query;
 import com.goldrushmc.bukkit.db.TrainScheduleTbl;
+import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
+import com.goldrushmc.bukkit.db.TrainStationTbl;
 import com.goldrushmc.bukkit.db.TrainStatusTbl;
 import com.goldrushmc.bukkit.db.TrainTbl;
 
 public interface DBTrainsAccessible {
 
+	
+	Query<TrainStationLocationTbl> queryTrainStationLocations();
+	
+	Query<TrainStationTbl> queryTrainStations();
 	/**
 	 * Queries the DB for the TrainScheduleTbl class.
 	 * 
@@ -31,6 +37,10 @@ public interface DBTrainsAccessible {
 	 */
 	Query<TrainStatusTbl> queryStatus();
 	
+	List<TrainStationTbl> getTrainStations();
+	
+	List<TrainStationLocationTbl> getTrainStationLocations();
+	
 	/**
 	 * Gets all of the current schedules for all trains.
 	 * 
@@ -51,6 +61,10 @@ public interface DBTrainsAccessible {
 	 * @return
 	 */
 	List<TrainStatusTbl> getStatuses();
+	
+	TrainStationTbl getTrainStation(String stationName);
+	
+	TrainStationTbl getTrainStation(TrainTbl train);
 	
 	/**
 	 * Gets the next train schedule for the specified train via {@link TrainTbl} class.

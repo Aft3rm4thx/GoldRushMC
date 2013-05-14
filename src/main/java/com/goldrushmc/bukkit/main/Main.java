@@ -25,9 +25,10 @@ import com.goldrushmc.bukkit.guns.GunLis;
 import com.goldrushmc.bukkit.guns.GunTool;
 import com.goldrushmc.bukkit.panning.PanningLis;
 import com.goldrushmc.bukkit.panning.PanningTool;
-import com.goldrushmc.bukkit.train.TrainLis;
-import com.goldrushmc.bukkit.train.WandLis;
-import com.goldrushmc.bukkit.train.station.TrainStationListener;
+import com.goldrushmc.bukkit.train.listeners.TrainLis;
+import com.goldrushmc.bukkit.train.listeners.TrainStationListener;
+import com.goldrushmc.bukkit.train.listeners.WandLis;
+import com.goldrushmc.bukkit.train.scheduling.Departure;
 import com.goldrushmc.bukkit.tunnelcollapse.SettingsManager;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelCollapseCommand;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelsListener;
@@ -43,7 +44,7 @@ public final class Main extends JavaPlugin{
 	public final TunnelsListener tunnel = new TunnelsListener(this);
 	public final GunLis gl = new GunLis(this);
 	public final PanningLis pl = new PanningLis(this);
-	public final InventoryLis il = new InventoryLis(this);	
+	public final InventoryLis il = new InventoryLis(this);
 
 	@Override
 	public void onEnable() {
@@ -72,6 +73,9 @@ public final class Main extends JavaPlugin{
 		
 		//Populate the train station listener maps
 		tsl.populate();
+		
+		//TODO Create scheduled train runs. This is a SHELL.
+		getServer().getScheduler().scheduleSyncRepeatingTask(this, new Departure(this), 6000, 6000);
 		
 		getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");		
 	}

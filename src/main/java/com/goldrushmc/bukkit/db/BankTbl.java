@@ -21,7 +21,7 @@ public class BankTbl {
 	@Id @GeneratedValue private int id;
 	@Column(name = "BANK_NAME") @NotEmpty private String name;
 	@Column(name = "INTEREST") @NotNull private float interest;
-	@OneToMany(mappedBy = "com.goldrushmc.bukkit.bank") private Set<PlayerTbl> customers;
+	@OneToMany(mappedBy = "bank") private Set<PlayerTbl> customers;
 	@OneToOne private TownTbl town;
 
 	public int getId() {

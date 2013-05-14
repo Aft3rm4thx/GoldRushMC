@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -13,8 +15,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.train.CardinalMarker;
-import com.goldrushmc.bukkit.train.WandLis;
+import com.goldrushmc.bukkit.train.listeners.WandLis;
 import com.goldrushmc.bukkit.train.station.StationType;
+import com.goldrushmc.bukkit.train.station.TrainStation;
 import com.goldrushmc.bukkit.train.station.TrainStationTransport;
 
 
@@ -48,7 +51,18 @@ public class CreateTrainStation extends CommandDefault {
 		if(!(size == 4)) { sender.sendMessage("You need " + (4 - size) + " more markers"); return true; }
 		
 		//Get the list of locations in the right order.
-		List<Location> locs = getDirection(WandLis.wandLoc.get(p));
+//		List<Location> locs = getDirection(WandLis.wandLoc.get(p));
+		List<Location> locs = WandLis.wandLoc.get(p);
+		
+		//TODO To check if the algorithm is correct. Hasn't worked yet.
+		//North-east
+		locs.get(0).getBlock().setType(Material.REDSTONE_BLOCK);
+		//South-east
+		locs.get(1).getBlock().setType(Material.EMERALD_BLOCK);
+		//North-west
+		locs.get(2).getBlock().setType(Material.DIAMOND_BLOCK);
+		//South-west
+		locs.get(3).getBlock().setType(Material.IRON_BLOCK);
 		
 		//Store the locations in the appropriate map.
 		Map<CardinalMarker, Location> corners = new HashMap<CardinalMarker, Location>();
@@ -56,15 +70,31 @@ public class CreateTrainStation extends CommandDefault {
 		corners.put(CardinalMarker.SOUTH_EAST_CORNER, locs.get(1));
 		corners.put(CardinalMarker.NORTH_WEST_CORNER, locs.get(2));
 		corners.put(CardinalMarker.SOUTH_WEST_CORNER, locs.get(3));
-				
+		
+//		//TODO To check if the algorithm is correct. Hasn't worked yet.
+//		//North-east
+//		corners.get(CardinalMarker.NORTH_EAST_CORNER).getBlock().setType(Material.GOLD_BLOCK);
+//		//South-east
+//		corners.get(CardinalMarker.SOUTH_EAST_CORNER).getBlock().setType(Material.EMERALD_BLOCK);
+//		//North-west
+//		corners.get(CardinalMarker.NORTH_WEST_CORNER).getBlock().setType(Material.DIAMOND_BLOCK);
+//		//South-west
+//		corners.get(CardinalMarker.NORTH_EAST_CORNER).getBlock().setType(Material.IRON_BLOCK);
+		
 		StationType type = StationType.findType(args[1]);
 		if(type == null) { p.sendMessage("Please use a legitimate station type"); return true;}
 		
+		TrainStation s = null;
+		
 		switch(type) {
-		case DEFAULT: new TrainStationTransport(plugin, args[1], corners, p.getWorld()); break;
+		case DEFAULT: s = new TrainStationTransport(plugin, args[1], corners, p.getWorld()); break;
 		case PASSENGER_TRANS:
-		case STORAGE_TRANS: new TrainStationTransport(plugin, args[1], corners, p.getWorld()); break;
+		case STORAGE_TRANS: s = new TrainStationTransport(plugin, args[1], corners, p.getWorld()); break;
 		}	
+		
+		for(Block b : s.getSurface()) {
+			b.setType(Material.GOLD_BLOCK);
+		}
 		
 		WandLis.wandLoc.remove(p);
 		p.sendMessage("Markers reset!");
@@ -72,6 +102,22 @@ public class CreateTrainStation extends CommandDefault {
 		return true;
 		
 	}
+	
+//	public List<Location> getCorners(List<Location> locs) {
+//		Location loc1 = locs.get(0), loc2 = locs.get(1), loc3 = locs.get(2), loc4 = locs.get(3);
+//		
+//		List<Location> directions = new ArrayList<Location>();
+//
+//		Location southwest = null, northwest = null, southeast = null, northeast = null;
+//
+//		int x1 = loc1.getBlockX(), z1 = loc1.getBlockZ(), x2 = loc2.getBlockX(), z2 = loc2.getBlockZ();
+//		int x3 = loc3.getBlockX(), z3 = loc3.getBlockZ(), x4 = loc4.getBlockX(), z4 = loc4.getBlockZ();
+//		boolean u1 = false, u2 = false, u3 = false, u4 = false;
+//		
+//		return null;
+//		
+//	}
+	
 	
 	/**
 	 * Determines the correct directions for each of the locations and orders them accordingly.

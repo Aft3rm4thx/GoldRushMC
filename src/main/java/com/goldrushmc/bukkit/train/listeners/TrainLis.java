@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.train;
+package com.goldrushmc.bukkit.train.listeners;
 
 import java.util.List;
 
@@ -28,6 +28,7 @@ import com.bergerkiller.bukkit.tc.events.GroupRemoveEvent;
 import com.bergerkiller.bukkit.tc.events.MemberRemoveEvent;
 import com.bergerkiller.bukkit.tc.events.MemberSpawnEvent;
 import com.goldrushmc.bukkit.defaults.DefaultListener;
+import com.goldrushmc.bukkit.train.TrainFactory;
 import com.goldrushmc.bukkit.train.util.TrainTools;
 
 public class TrainLis extends DefaultListener {

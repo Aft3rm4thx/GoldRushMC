@@ -23,6 +23,7 @@ import com.goldrushmc.bukkit.db.TrainTbl;
 import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
 import com.goldrushmc.bukkit.defaults.TrainDB;
 import com.goldrushmc.bukkit.train.CardinalMarker;
+import com.goldrushmc.bukkit.train.listeners.TrainStationListener;
 import com.goldrushmc.bukkit.train.signs.ISignLogic;
 import com.goldrushmc.bukkit.train.signs.SignLogic;
 
@@ -44,9 +45,10 @@ public abstract class TrainStation {
 	protected volatile List<Player> visitors = new ArrayList<Player>();
 	protected List<HumanEntity> workers = new ArrayList<HumanEntity>();
 	protected Map<CardinalMarker, Location> corners;
-	protected List<Location> perimeter;
-	protected World world;
-	protected List<Chunk> chunks;
+	protected final List<Block> perimeter;
+	protected final List<Block> surfaceBlocks;
+	protected final World world;
+	protected final List<Chunk> chunks;
 	protected List<MinecartGroup> trains;
 	protected List<Block> rails;
 	protected boolean isBidirectional;
@@ -71,6 +73,7 @@ public abstract class TrainStation {
 		this.chunks = chunk;
 		Bukkit.getLogger().info("Creating a perimeter...");
 		this.perimeter = generatePerimeter();
+		this.surfaceBlocks = generateSurface();
 		Bukkit.getLogger().info("Finding Signs...");
 		initSigns();
 		Bukkit.getLogger().info("There are " + signList.size() + " chunks");
@@ -83,10 +86,6 @@ public abstract class TrainStation {
 		//Add to the list of stations! IMPORTANT
 		trainStations.add(this);
 		TrainStationListener.addStation(this);
-	}
-	
-	protected TrainStation(final JavaPlugin plugin) {
-		db = new TrainDB(plugin);
 	}
 	
 	public MinecartGroup[] getDepartingTrains() {
@@ -116,8 +115,7 @@ public abstract class TrainStation {
 	}
 
 	public void createSidewalk() {
-		for(Location loc : perimeter) {
-			Block b = loc.getBlock();
+		for(Block b : this.perimeter) {
 			b.setType(Material.STEP);
 		}
 	}
@@ -131,7 +129,7 @@ public abstract class TrainStation {
 	 * North = Z - 1
 	 * @return
 	 */
-	public List<Location> generatePerimeter() {
+	public List<Block> generatePerimeter() {
 
 		//Get all of the locations for each corner.
 		Location northEast = corners.get(CardinalMarker.NORTH_EAST_CORNER),
@@ -141,21 +139,54 @@ public abstract class TrainStation {
 
 		//Iterate through each line of locations, and add them to the perimeter. This should make a rectangle.
 		//TODO make a cube, instead of a rectangle, if possible or necessary.
-		List<Location> perimeter = new ArrayList<Location>();
+		List<Block> perimeter = new ArrayList<Block>();
 		for(int i = northWest.getBlockZ() + 1; i < southWest.getBlockZ(); i++) {
-			perimeter.add(new Location(this.world, northWest.getBlockX(), northWest.getBlockY(), i));
+			Location loc = new Location(this.world, northWest.getBlockX(), northWest.getBlockY(), i);
+//			loc.getWorld().getBlockAt(loc).setType(Material.STONE);
+			perimeter.add(loc.getBlock());
 		}
 		for(int i = southWest.getBlockX() + 1; i < southEast.getBlockX(); i++) {
-			perimeter.add(new Location(this.world, i, southWest.getBlockY(), southWest.getBlockZ()));
+			Location loc = new Location(this.world, i, southWest.getBlockY(), southWest.getBlockZ());
+//			loc.getWorld().getBlockAt(loc).setType(Material.STONE);
+			perimeter.add(loc.getBlock());
 		}
 		for(int i = southEast.getBlockZ() - 1; i > northEast.getBlockZ(); i--) {
-			perimeter.add(new Location(this.world, southEast.getBlockX(), southEast.getBlockY(), i));
+			Location loc = new Location(this.world, southEast.getBlockX(), southEast.getBlockY(), i);
+//			loc.getWorld().getBlockAt(loc).setType(Material.STONE);
+			perimeter.add(loc.getBlock());
 		}
 		for(int i = northEast.getBlockX() - 1; i > northWest.getBlockX(); i--) {
-			perimeter.add(new Location(this.world, i, northEast.getBlockY(), northEast.getBlockZ()));
+			Location loc = new Location(this.world, i, northEast.getBlockY(), northEast.getBlockZ());
+//			loc.getWorld().getBlockAt(loc).setType(Material.STONE);
+			perimeter.add(loc.getBlock());
 		}
 
 		return perimeter;
+	}
+	
+	/**
+	 * Gets the surface of the {@link TrainStation}. (FLAT)
+	 * 
+	 * @return The {@code List}<{@link Block}> that contains all surface blocks.
+	 */
+	public List<Block> generateSurface() {
+		
+		List<Block> blocks = new ArrayList<Block>();
+		
+		Location northEast = this.corners.get(CardinalMarker.NORTH_EAST_CORNER),
+//		southEast = this.corners.get(CardinalMarker.SOUTH_EAST_CORNER),
+		northWest = this.corners.get(CardinalMarker.NORTH_WEST_CORNER),
+		southWest = this.corners.get(CardinalMarker.SOUTH_WEST_CORNER);
+		
+		for(int i = northWest.getBlockZ(); i <= southWest.getBlockZ(); i++) {
+			Location start = new Location(this.world, northWest.getX(), northWest.getY(), i);
+			blocks.add(start.getBlock());
+			for(int j = northWest.getBlockX(); j <= northEast.getBlockX(); j++) {
+				Location increment = new Location(this.world, j, start.getY(), start.getZ());
+				blocks.add(increment.getBlock());
+			}
+		}
+		return blocks;
 	}
 
 	public void findWorkers() {
@@ -170,6 +201,10 @@ public abstract class TrainStation {
 				}
 			}
 		}
+	}
+	
+	public List<Block> getSurface() {
+		return this.surfaceBlocks;
 	}
 
 	public void findPlayers() {
@@ -295,17 +330,17 @@ public abstract class TrainStation {
 		return corners;
 	}
 
-	/**
-	 * Sets new corners of the station. WILL re-generate the station's perimeter.
-	 * 
-	 * @param corners
-	 */
-	public void setCorners(Map<CardinalMarker, Location> corners) {
-		this.corners = corners;
-		this.perimeter = this.generatePerimeter();
-	}
+//	/**
+//	 * Sets new corners of the station. WILL re-generate the station's perimeter.
+//	 * 
+//	 * @param corners
+//	 */
+//	public void setCorners(Map<CardinalMarker, Location> corners) {
+//		this.corners = corners;
+//		this.perimeter = this.generatePerimeter();
+//	}
 
-	public List<Location> getPerimeter() {
+	public List<Block> getPerimeter() {
 		return perimeter;
 	}
 
