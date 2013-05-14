@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.goldrushmc.bukkit.defaults.CommandDefault;
 import com.goldrushmc.bukkit.train.CardinalMarker;
+import com.goldrushmc.bukkit.train.FindCorners;
 import com.goldrushmc.bukkit.train.listeners.WandLis;
 import com.goldrushmc.bukkit.train.station.StationType;
 import com.goldrushmc.bukkit.train.station.TrainStation;
@@ -54,32 +55,35 @@ public class CreateTrainStation extends CommandDefault {
 //		List<Location> locs = getDirection(WandLis.wandLoc.get(p));
 		List<Location> locs = WandLis.wandLoc.get(p);
 		
-		//TODO To check if the algorithm is correct. Hasn't worked yet.
-		//North-east
-		locs.get(0).getBlock().setType(Material.REDSTONE_BLOCK);
-		//South-east
-		locs.get(1).getBlock().setType(Material.EMERALD_BLOCK);
-		//North-west
-		locs.get(2).getBlock().setType(Material.DIAMOND_BLOCK);
-		//South-west
-		locs.get(3).getBlock().setType(Material.IRON_BLOCK);
-		
-		//Store the locations in the appropriate map.
-		Map<CardinalMarker, Location> corners = new HashMap<CardinalMarker, Location>();
-		corners.put(CardinalMarker.NORTH_EAST_CORNER, locs.get(0));
-		corners.put(CardinalMarker.SOUTH_EAST_CORNER, locs.get(1));
-		corners.put(CardinalMarker.NORTH_WEST_CORNER, locs.get(2));
-		corners.put(CardinalMarker.SOUTH_WEST_CORNER, locs.get(3));
-		
 //		//TODO To check if the algorithm is correct. Hasn't worked yet.
 //		//North-east
-//		corners.get(CardinalMarker.NORTH_EAST_CORNER).getBlock().setType(Material.GOLD_BLOCK);
+//		locs.get(0).getBlock().setType(Material.REDSTONE_BLOCK);
 //		//South-east
-//		corners.get(CardinalMarker.SOUTH_EAST_CORNER).getBlock().setType(Material.EMERALD_BLOCK);
+//		locs.get(1).getBlock().setType(Material.EMERALD_BLOCK);
 //		//North-west
-//		corners.get(CardinalMarker.NORTH_WEST_CORNER).getBlock().setType(Material.DIAMOND_BLOCK);
+//		locs.get(2).getBlock().setType(Material.DIAMOND_BLOCK);
 //		//South-west
-//		corners.get(CardinalMarker.NORTH_EAST_CORNER).getBlock().setType(Material.IRON_BLOCK);
+//		locs.get(3).getBlock().setType(Material.IRON_BLOCK);
+		
+		//Store the locations in the appropriate map.
+		
+		FindCorners fc = new FindCorners(locs.get(0),locs.get(1),locs.get(2),locs.get(3));
+		
+		Map<CardinalMarker, Location> corners = new HashMap<CardinalMarker, Location>();
+		corners.put(CardinalMarker.NORTH_EAST_CORNER, fc.getNorthEast());
+		corners.put(CardinalMarker.SOUTH_EAST_CORNER, fc.getSouthEast());
+		corners.put(CardinalMarker.NORTH_WEST_CORNER, fc.getNorthWest());
+		corners.put(CardinalMarker.SOUTH_WEST_CORNER, fc.getSouthWest());
+		
+		//TODO To check if the algorithm is correct. Hasn't worked yet.
+		//North-east
+		corners.get(CardinalMarker.NORTH_EAST_CORNER).getBlock().setType(Material.GOLD_BLOCK);
+		//South-east
+		corners.get(CardinalMarker.SOUTH_EAST_CORNER).getBlock().setType(Material.EMERALD_BLOCK);
+		//North-west
+		corners.get(CardinalMarker.NORTH_WEST_CORNER).getBlock().setType(Material.DIAMOND_BLOCK);
+		//South-west
+		corners.get(CardinalMarker.NORTH_EAST_CORNER).getBlock().setType(Material.IRON_BLOCK);
 		
 		StationType type = StationType.findType(args[1]);
 		if(type == null) { p.sendMessage("Please use a legitimate station type"); return true;}
