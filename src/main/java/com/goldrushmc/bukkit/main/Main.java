@@ -47,7 +47,7 @@ public final class Main extends JavaPlugin{
 
 	@Override
 	public void onEnable() {
-		setupDB();
+		//setupDB();
 		
 		//Add commands
 		getCommand("StationWand").setExecutor(new StationWand(this));
