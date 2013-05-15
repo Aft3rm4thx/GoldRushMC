@@ -41,7 +41,7 @@ public abstract class TrainStation {
 	public static List<TrainStation> trainStations = new ArrayList<TrainStation>();
 	public static final Material defaultStop = Material.BEDROCK;
 	public static DBTrainsAccessible db;
-	
+
 	protected String stationName;
 	protected transient String departingTrain;
 	protected final ISignLogic signs;
@@ -85,31 +85,30 @@ public abstract class TrainStation {
 		this.trainArea = getTrainArea(this.surfaceBlocks);
 		this.rails = findRails();
 		this.stopBlock = this.findStopBlock(defaultStop);
-		
+
 		Bukkit.getLogger().info("Finding Signs...");
 		this.signs = generateSignLogic();
 		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
-		BlockFace tempDir = BlockFace.NORTH;
+		BlockFace tempDir = null;
 		if(dir != null) {
-			if(dir.getLines().length == 3) {
-				if(BlockFace.valueOf(dir.getLine(3)) != null) {
-					tempDir = BlockFace.valueOf(dir.getLine(3));	
-				}
-			}
+			Bukkit.getLogger().info("Sign isn't null!");
+			tempDir = TrainTools.getDirection(dir.getLine(2));
 		}
-		this.direction = tempDir;
-		Bukkit.getLogger().info("There are " + signs.getSigns().size() + " signs in the station.");
-		findWorkers();
-		Bukkit.getLogger().info("Amount of Workers: " + getWorkers().size());
-		findPlayers();
-		Bukkit.getLogger().info("Amount of Visitors: " + getVisitors().size());
+		if(tempDir != null) {
+			this.direction = tempDir;	
+		}
+		else {
+			this.direction = BlockFace.SELF;
+		}
 		
-		Bukkit.getLogger().info("Adding to listener and listing...");
+		Bukkit.getLogger().info("The direction set is: " + this.direction.name());
+		findWorkers();
+		findPlayers();
 		//Add to the list of stations! IMPORTANT
 		trainStations.add(this);
 		TrainStationLis.addStation(this);
 	}
-	
+
 	/**
 	 * We require the JavaPlugin because this class must be able to access the database.
 	 * This is the standard constructor with a custom stop block.
@@ -138,7 +137,7 @@ public abstract class TrainStation {
 		this.trainArea = getTrainArea(this.surfaceBlocks);
 		this.rails = findRails();
 		this.stopBlock = this.findStopBlock(stopMat);
-		
+
 		Bukkit.getLogger().info("Finding Signs...");
 		this.signs = generateSignLogic();
 		if(BlockFace.valueOf(this.signs.getSign(SignType.TRAIN_STATION_DIRECTION).getLine(3)) != null) {
@@ -153,13 +152,13 @@ public abstract class TrainStation {
 		Bukkit.getLogger().info("Amount of Workers: " + getWorkers().size());
 		findPlayers();
 		Bukkit.getLogger().info("Amount of Visitors: " + getVisitors().size());
-		
+
 		Bukkit.getLogger().info("Adding to listener and listing...");
 		//Add to the list of stations! IMPORTANT
 		trainStations.add(this);
 		TrainStationLis.addStation(this);
 	}
-	
+
 	public MinecartGroup[] getDepartingTrains() {
 		long current = this.world.getTime();
 		MinecartGroup[] toDepart = new MinecartGroup[trains.size()];
@@ -178,7 +177,7 @@ public abstract class TrainStation {
 		}
 		return toDepart;
 	}
-	
+
 
 	public void createSidewalk() {
 		for(Block b : this.perimeter) {
@@ -224,7 +223,7 @@ public abstract class TrainStation {
 
 		return perimeter;
 	}
-	
+
 	/**
 	 * Gets the surface of the {@link TrainStation}. (FLAT)
 	 * 
@@ -232,18 +231,18 @@ public abstract class TrainStation {
 	 * @throws TooLowException 
 	 */
 	public List<Block> generateSurface() throws TooLowException {
-		
+
 		List<Block> blocks = new ArrayList<Block>();
-		
+
 		Location northEast = this.corners.get(CardinalMarker.NORTH_EAST_CORNER),
-//		southEast = this.corners.get(CardinalMarker.SOUTH_EAST_CORNER),
-		northWest = this.corners.get(CardinalMarker.NORTH_WEST_CORNER),
-		southWest = this.corners.get(CardinalMarker.SOUTH_WEST_CORNER);
-		
+				//		southEast = this.corners.get(CardinalMarker.SOUTH_EAST_CORNER),
+				northWest = this.corners.get(CardinalMarker.NORTH_WEST_CORNER),
+				southWest = this.corners.get(CardinalMarker.SOUTH_WEST_CORNER);
+
 		if(northEast.getY() < 5)throw new TooLowException(northEast);
 		else if(northWest.getY() < 5)throw new TooLowException(northWest);
 		else if(southWest.getY() < 5) throw new TooLowException(southWest);
-		
+
 		for(int i = northWest.getBlockZ(); i <= southWest.getBlockZ(); i++) {
 			Location start = new Location(this.world, northWest.getX(), northWest.getY(), i);
 			blocks.add(start.getBlock());
@@ -254,7 +253,7 @@ public abstract class TrainStation {
 		}
 		return blocks;
 	}
-	
+
 	public List<Block> getArea() {
 		return this.area;
 	}
@@ -273,7 +272,7 @@ public abstract class TrainStation {
 		}
 		return full;
 	}
-	
+
 	protected List<Block> getTrainArea(List<Block> blocks) {
 		List<Block> full = new ArrayList<Block>();
 		for(Block b : blocks) {
@@ -288,7 +287,7 @@ public abstract class TrainStation {
 
 	protected void findWorkers() {
 	}
-	
+
 	public List<Block> getSurface() {
 		return this.surfaceBlocks;
 	}
@@ -299,7 +298,7 @@ public abstract class TrainStation {
 	public void addVisitor(Player visitor) {
 		this.visitors.add(visitor);
 	}
-	
+
 	public void removeVisitor(Player visitor) {
 		this.visitors.remove(visitor);
 	}
@@ -323,7 +322,7 @@ public abstract class TrainStation {
 			}
 		}
 	}
-	
+
 	/**
 	 * Finds the next train queued for departure. Its front cart (furnace cart) will be just above the stop block.
 	 * 
@@ -337,7 +336,7 @@ public abstract class TrainStation {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Changes the signs to reflect the buying and selling of carts for the specified train.
 	 * 
@@ -362,11 +361,11 @@ public abstract class TrainStation {
 		}
 		return null;
 	}
-	
+
 	public Block getStopBlock() {
 		return stopBlock;
 	}
-	
+
 	/**
 	 * This finds the rails which are within the train station.
 	 * 
@@ -381,9 +380,9 @@ public abstract class TrainStation {
 		}
 		return rails;
 	}
-	
+
 	//TODO Various Getters and Setters for the Train Station class.
-	
+
 	/**
 	 * Gets all of the existing train stations.
 	 * 
@@ -403,7 +402,7 @@ public abstract class TrainStation {
 	public void setStationName(String stationName) {this.stationName = stationName;}
 
 	public ISignLogic getSigns() {return signs;}
-	
+
 	public BlockFace getDirection() { return direction;}
 
 	public List<Player> getVisitors() {	return visitors;}	

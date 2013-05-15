@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 
@@ -46,8 +48,8 @@ public class SignLogic implements ISignLogic {
 	@Override
 	public void findRelevantSigns(List<Block> blocks) {
 		for(Block b : blocks) {
-//			if(b.getType().equals(Material.SIGN) || b.getType().equals(Material.WALL_SIGN) || b.getType().equals(Material.SIGN_POST)) {
-			if(b.getState() instanceof Sign) {
+			if(b.getType().equals(Material.SIGN) || b.getType().equals(Material.WALL_SIGN) || b.getType().equals(Material.SIGN_POST)) {
+				//			if(b.getState() instanceof Sign) {
 				Sign s = (Sign) b.getState();
 				String[] lines = s.getLines();
 				//Make sure it has a length of 4.
@@ -73,7 +75,8 @@ public class SignLogic implements ISignLogic {
 							this.signTypes.put(SignType.REMOVE_RIDE_CART, s);
 							this.signs.put(lines[1], s);
 						}
-						else if(lines[1].equals("Direction")) {
+						else if(lines[1].equals("direction")) {
+							Bukkit.getLogger().info("Getting train direction!");
 							this.signList.add(s);
 							this.signTypes.put(SignType.TRAIN_STATION_DIRECTION, s);
 							this.signs.put(lines[1], s);
@@ -81,11 +84,11 @@ public class SignLogic implements ISignLogic {
 					}
 					//TODO Could be used for house signs.
 					else if(lines[0].equals("{houses}")) {
-						
+
 					}
 					//TODO Could be used for bank signs.
 					else if(lines[0].equals("{banks}")) {
-						
+
 					}
 				}
 			}
@@ -97,7 +100,7 @@ public class SignLogic implements ISignLogic {
 	public Sign getSign(String signName) {
 		return this.signs.get(signName);
 	}
-	
+
 	@Override
 	public Sign getSign(SignType type) {
 		return this.signTypes.get(type);
@@ -147,6 +150,6 @@ public class SignLogic implements ISignLogic {
 				this.signs.put(lines[1], s);
 			}
 		}
-		
+
 	}
 }

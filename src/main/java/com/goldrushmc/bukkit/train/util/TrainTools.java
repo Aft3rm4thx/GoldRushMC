@@ -19,6 +19,16 @@ public class TrainTools {
 		}
 	}
 	
+	public static BlockFace getDirection(String direction) {
+		switch(direction) {
+		case "North": return BlockFace.NORTH;
+		case "South": return BlockFace.SOUTH;
+		case "East": return BlockFace.EAST;
+		case "West": return BlockFace.WEST;
+		default: return null;
+		}
+	}
+	
 	/**
 	 * Gets the BlockFace direction, based on the Yaw
 	 * 

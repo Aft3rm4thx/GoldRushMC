@@ -97,6 +97,9 @@ public class TrainStationLis extends DefaultListener {
 	@EventHandler
 	public void onSignClick(PlayerInteractEvent event) {
 
+		//We don't care about air blocks!
+		if(event.getClickedBlock() == null) return;
+		
 		BlockState bs = event.getClickedBlock().getState();
 
 		//Player can only right click to get this event to work. Otherwise we fail silently.
