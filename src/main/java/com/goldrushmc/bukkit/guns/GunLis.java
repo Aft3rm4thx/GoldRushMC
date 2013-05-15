@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -20,11 +21,14 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
 import com.goldrushmc.bukkit.defaults.DefaultListener;
+import com.goldrushmc.bukkit.defaults.DefaultListener;
+
 
 public class GunLis extends DefaultListener {
 
@@ -34,6 +38,7 @@ public class GunLis extends DefaultListener {
 	}
 
 	public HashMap<Player, Boolean> cockHash = new HashMap<Player, Boolean>();
+	public HashMap<Player, Boolean> hasReloadedHash = new HashMap<Player, Boolean>();
 	
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onRightClick(PlayerInteractEvent e) {		
@@ -57,9 +62,22 @@ public class GunLis extends DefaultListener {
 								//p.getWorld().spawnEntity(p.getEyeLocation(), EntityBullet);
 								
 								//gun fire sound
-								p.playSound(p.getLocation(), Sound.ZOMBIE_METAL,10, -1f);
+								p.playSound(p.getLocation(), Sound.ZOMBIE_METAL,1, -3f);
+								
 								//gun fire smoke effect
-								p.playEffect(getSpawnLoc(p), Effect.SMOKE, 0);
+								Location smokePos = getSpawnLoc(p);
+								p.playEffect(smokePos, Effect.SMOKE, 0);
+								
+								//smoke and gun for other players
+								List<Player> plList = getPlayersWithin(p, 50);
+								double distance = 0;
+								for(int i = 0; i < plList.size();i++) {
+									plList.get(i).playEffect(smokePos, Effect.SMOKE, 0);
+									distance = plList.get(i).getLocation().distance(p.getLocation());
+									if(distance <=50 && distance > 0){
+										plList.get(i).playSound(smokePos, Sound.ZOMBIE_METAL, (float)  (1 - (distance / 50)), -3f);
+									}
+								}
 								
 								Snowball snowball = p.launchProjectile(Snowball.class);
 								snowball.setVelocity(p.getLocation().getDirection().multiply(5));
@@ -105,11 +123,45 @@ public class GunLis extends DefaultListener {
 		}
 	}
 	
-	public void Reload(Player p) {
-		ReloadTask rt = new ReloadTask(p);
-		for(int i = 0; i < 6; i++){
-			Bukkit.getServer().getScheduler().runTaskLater(plugin, rt, i * 10);
+	public List<Player> getPlayersWithin(Player player, int distance) {
+		List<Player> res = new ArrayList<Player>();
+		int d2 = distance * distance;
+		for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+			if (p.getWorld() == player.getWorld() && p.getLocation().distanceSquared(player.getLocation()) <= d2) {
+				res.add(p);
+			}
 		}
+		return res;
+	}
+	
+	public void Reload(Player p) {
+	hasReloadedHash.put(p, false);
+	if (p.getItemInHand().getType().equals(Material.CARROT_STICK)) {
+		if (p.getItemInHand().getItemMeta().hasDisplayName()) {
+			if (p.getItemInHand().getItemMeta().getDisplayName().equals("Colt")) {
+				if (p.getItemInHand().getDurability() > 1) {
+					for (int i = 0; i < 36; i++) {
+						if(p.getInventory().getItem(i) != null) {
+							if(p.getInventory().getItem(i).getTypeId() == 332){
+								if(p.getInventory().getItem(i).getAmount() == 1){
+									p.getInventory().clear(i);
+								} else {
+									p.getInventory().getItem(i).setAmount(p.getInventory().getItem(i).getAmount() - 1);
+								}
+								p.playSound(p.getLocation(), Sound.CLICK,5, 2f);
+								p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() - 4));
+								hasReloadedHash.put(p, true);
+								break;
+								}
+							}
+						}
+						if(!hasReloadedHash.get(p)){
+							p.sendMessage(ChatColor.DARK_RED + "Out of Ammo!");
+						}
+				}
+			}
+		}
+	}
 	}
 	
 	class HeightModTask implements Runnable{
@@ -123,28 +175,6 @@ public class GunLis extends DefaultListener {
 			if(!s.isDead()){
 				s.setFallDistance(0);
 				Bukkit.getServer().getScheduler().runTaskLater(plugin, this, 1);
-			}
-		}
-
-	}
-
-	class ReloadTask implements Runnable{
-		Player p;
-		ReloadTask(Player player){
-			p = player;
-		}
-
-		@Override
-		public void run() {			
-			if (p.getItemInHand().getType().equals(Material.CARROT_STICK)) {
-				if (p.getItemInHand().getItemMeta().hasDisplayName()) {
-					if (p.getItemInHand().getItemMeta().getDisplayName().equals("Colt")) {
-						if (p.getItemInHand().getDurability() > 1) {
-							p.playSound(p.getLocation(), Sound.CLICK,5, 2f);
-							p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() - 4));
-						}
-					}
-				}
 			}
 		}
 
@@ -214,46 +244,5 @@ public class GunLis extends DefaultListener {
 		} else {
 			return null;
 		}
-	}
-
-	public LivingEntity getTarget(Player p) {
-		List<Entity> nearbyE = p.getNearbyEntities(50, 50, 50);
-		ArrayList<LivingEntity> livingE = new ArrayList<LivingEntity>();
-
-		for (Entity e : nearbyE) {
-			if (e instanceof LivingEntity) {
-				livingE.add((LivingEntity) e);
-			}
-		}
-
-		// plugin.target = null;
-		BlockIterator bItr = new BlockIterator(p, 50);
-		Block block;
-		Location loc;
-		LivingEntity target = null;
-		int bx, by, bz;
-		double ex, ey, ez;
-		// loop through player's line of sight
-		while (bItr.hasNext()) {
-			block = bItr.next();
-			bx = block.getX();
-			by = block.getY();
-			bz = block.getZ();
-			// check for entities near this block in the line of sight
-			for (LivingEntity e : livingE) {
-				loc = e.getLocation();
-				ex = loc.getX();
-				ey = loc.getY();
-				ez = loc.getZ();
-				if ((bx - .75 <= ex && ex <= bx + 1.75)
-						&& (bz - .75 <= ez && ez <= bz + 1.75)
-						&& (by - 1 <= ey && ey <= by + 2.5)) {
-					// entity is close enough, set target and stop
-					target = e;
-					break;
-				}
-			}
-		}
-		return target;
 	}
 }

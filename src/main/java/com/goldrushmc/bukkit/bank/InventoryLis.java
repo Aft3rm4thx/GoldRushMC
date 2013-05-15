@@ -3,6 +3,7 @@ package com.goldrushmc.bukkit.bank;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -51,12 +52,14 @@ public class InventoryLis extends DefaultListener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerLogin(PlayerLoginEvent e) {	
 		//Schedule run to fill player's inventory in 30 ticks
+		if(e.getPlayer().getGameMode().equals(GameMode.ADVENTURE))
 		Bukkit.getScheduler().runTaskLater(plugin, new FillInv(e.getPlayer()), 30);
 	}
 	
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerRespawn(PlayerRespawnEvent e) {	
 		//Schedule run to fill player's inventory in 30 ticks
+		if(e.getPlayer().getGameMode().equals(GameMode.ADVENTURE))
 		Bukkit.getScheduler().runTaskLater(plugin, new FillInv(e.getPlayer()), 30);
 	}
 	
