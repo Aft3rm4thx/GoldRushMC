@@ -38,6 +38,12 @@ commands:
    aliases: [pt]
    permission: golrushmc.goldpan
    usage: /<command>
+
+  showvisitors:
+   description: Displays the amount of visitors per station.
+   aliases: [showvisitors, svisitors]
+   permission: goldrushmc.station.info
+   usage: /<command>
    
 permissions:
   goldrushmc.*:
@@ -47,6 +53,7 @@ permissions:
      goldrushmc.guns: true
      goldrushmc.collapsetest: true
      golrushmc.goldpan: true
+     goldrushmc.station.info: true
   goldrushmc.station.create:
     description: Allows you to spawn the station wand and make stations.
     default: true
@@ -58,4 +65,7 @@ permissions:
    default: true
   golrushmc.goldpan:
    description: Allows access to Gold Panning
+   default: true
+  goldrushmc.station.info:
+   description: Allows use of the show visitors command.
    default: true

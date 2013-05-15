@@ -12,11 +12,11 @@ import com.goldrushmc.bukkit.db.TrainStationTbl;
 import com.goldrushmc.bukkit.db.TrainStatusTbl;
 import com.goldrushmc.bukkit.db.TrainTbl;
 
-public class TrainDB implements DBTrainsAccessible {
+public class DBAccess implements DBTrainsAccessible {
 
 	private final JavaPlugin plugin;
 
-	public TrainDB(JavaPlugin plugin) {
+	public DBAccess(JavaPlugin plugin) {
 		this.plugin = plugin;
 	}
 

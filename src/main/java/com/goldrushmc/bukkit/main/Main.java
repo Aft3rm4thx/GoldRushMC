@@ -10,6 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.goldrushmc.bukkit.bank.InventoryLis;
 import com.goldrushmc.bukkit.commands.CreateTrainStation;
+import com.goldrushmc.bukkit.commands.ShowVisitorsCommand;
 import com.goldrushmc.bukkit.commands.StationWand;
 import com.goldrushmc.bukkit.db.BankTbl;
 import com.goldrushmc.bukkit.db.JobTbl;
@@ -20,13 +21,12 @@ import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
 import com.goldrushmc.bukkit.db.TrainStationTbl;
 import com.goldrushmc.bukkit.db.TrainStatusTbl;
 import com.goldrushmc.bukkit.db.TrainTbl;
-import com.goldrushmc.bukkit.defaults.TrainDB;
 import com.goldrushmc.bukkit.guns.GunLis;
 import com.goldrushmc.bukkit.guns.GunTool;
 import com.goldrushmc.bukkit.panning.PanningLis;
 import com.goldrushmc.bukkit.panning.PanningTool;
 import com.goldrushmc.bukkit.train.listeners.TrainLis;
-import com.goldrushmc.bukkit.train.listeners.TrainStationListener;
+import com.goldrushmc.bukkit.train.listeners.TrainStationLis;
 import com.goldrushmc.bukkit.train.listeners.WandLis;
 import com.goldrushmc.bukkit.train.scheduling.Departure;
 import com.goldrushmc.bukkit.tunnelcollapse.SettingsManager;
@@ -39,8 +39,7 @@ public final class Main extends JavaPlugin{
 	
 	public final TrainLis tl = new TrainLis(this);
 	public final WandLis wl = new WandLis(this);
-	public final TrainStationListener tsl = new TrainStationListener(this);
-	public final TrainDB db = new TrainDB(this);
+	public final TrainStationLis tsl = new TrainStationLis(this);
 	public final TunnelsListener tunnel = new TunnelsListener(this);
 	public final GunLis gl = new GunLis(this);
 	public final PanningLis pl = new PanningLis(this);
@@ -48,7 +47,7 @@ public final class Main extends JavaPlugin{
 
 	@Override
 	public void onEnable() {
-		//setupDB();
+		setupDB();
 		
 		//Add commands
 		getCommand("StationWand").setExecutor(new StationWand(this));
@@ -56,6 +55,7 @@ public final class Main extends JavaPlugin{
 		getCommand("Fall").setExecutor(new TunnelCollapseCommand(this));
 		getCommand("Gun").setExecutor(new GunTool(this));
 		getCommand("PanningTool").setExecutor(new PanningTool(this));
+		getCommand("ShowVisitors").setExecutor(new ShowVisitorsCommand(this));
 		
 		
 		//Register listeners

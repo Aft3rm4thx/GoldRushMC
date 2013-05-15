@@ -111,23 +111,14 @@ public class FindCorners {
 		}
 		for(int i=0; i<4;i++){
 			if(zArray[i] == mostSouthern) {
-				switch(i) {
-				case 0: mostSouthernTwo = locOne;
-					if(first != locOne){
-						break;
-					}					
-				case 1: mostSouthernTwo = locTwo;
-					if(first != locTwo){
-						break;
-					}
-				case 2: mostSouthernTwo = locThree;
-					if(first != locThree){
-						break;
-					}
-				case 3: mostSouthernTwo = locFour;
-					if(first != locFour){
-						break;
-					}
+				if(i == 0 && locOne != first){
+					mostSouthernTwo = locOne;
+				} else if(i == 1 && locTwo != first){
+					mostSouthernTwo = locTwo;
+				} else if(i == 2 && locThree != first){
+					mostSouthernTwo = locThree;
+				} else if(i == 3 && locFour != first){
+					mostSouthernTwo = locFour;
 				}
 			}
 		}
@@ -161,23 +152,14 @@ public class FindCorners {
 		}
 		for(int i=0; i<4;i++){
 			if(zArray[i] == mostNorthern) {
-				switch(i) {
-				case 0: mostNorthernTwo = locOne;
-					if(first != locOne){
-						break;
-					}					
-				case 1: mostNorthernTwo = locTwo;
-					if(first != locTwo){
-						break;
-					}
-				case 2: mostNorthernTwo = locThree;
-					if(first != locThree){
-						break;
-					}
-				case 3: mostNorthernTwo = locFour;
-					if(first != locFour){
-						break;
-					}
+				if(i == 0 && locOne != first){
+					mostNorthernTwo = locOne;
+				} else if(i == 1 && locTwo != first){
+					mostNorthernTwo = locTwo;
+				} else if(i == 2 && locThree != first){
+					mostNorthernTwo = locThree;
+				} else if(i == 3 && locFour != first){
+					mostNorthernTwo = locFour;
 				}
 			}
 		}
@@ -211,23 +193,14 @@ public class FindCorners {
 		}
 		for(int i=0; i<4;i++){
 			if(XArray[i] == mostEastern) {
-				switch(i) {
-				case 0: mostEasternTwo = locOne;
-					if(first != locOne){
-						break;
-					}					
-				case 1: mostEasternTwo = locTwo;
-					if(first != locTwo){
-						break;
-					}
-				case 2: mostEasternTwo = locThree;
-					if(first != locThree){
-						break;
-					}
-				case 3: mostEasternTwo = locFour;
-					if(first != locFour){
-						break;
-					}
+				if(i == 0 && locOne != first){
+					mostEasternTwo = locOne;
+				} else if(i == 1 && locTwo != first){
+					mostEasternTwo = locTwo;
+				} else if(i == 2 && locThree != first){
+					mostEasternTwo = locThree;
+				} else if(i == 3 && locFour != first){
+					mostEasternTwo = locFour;
 				}
 			}
 		}
@@ -261,23 +234,14 @@ public class FindCorners {
 		}
 		for(int i=0; i<4;i++){
 			if(XArray[i] == mostWestern) {
-				switch(i) {
-				case 0: mostWesternTwo = locOne;
-					if(first != locOne){
-						break;
-					}					
-				case 1: mostWesternTwo = locTwo;
-					if(first != locTwo){
-						break;
-					}
-				case 2: mostWesternTwo = locThree;
-					if(first != locThree){
-						break;
-					}
-				case 3: mostWesternTwo = locFour;
-					if(first != locFour){
-						break;
-					}
+				if(i == 0 && locOne != first){
+					mostWesternTwo = locOne;
+				} else if(i == 1 && locTwo != first){
+					mostWesternTwo = locTwo;
+				} else if(i == 2 && locThree != first){
+					mostWesternTwo = locThree;
+				} else if(i == 3 && locFour != first){
+					mostWesternTwo = locFour;
 				}
 			}
 		}

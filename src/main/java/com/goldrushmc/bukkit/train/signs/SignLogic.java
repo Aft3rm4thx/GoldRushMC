@@ -1,40 +1,38 @@
 package com.goldrushmc.bukkit.train.signs;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Chunk;
-import org.bukkit.Material;
-import org.bukkit.block.BlockState;
+import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 
 public class SignLogic implements ISignLogic {
 
 	public Map<String, Sign> signs = new HashMap<String, Sign>();
-	public Map<Sign, SignType> signTypes = new HashMap<Sign, SignType>();
+	public Map<SignType, Sign> signTypes = new HashMap<SignType, Sign>();
+	public List<Sign> signList = new ArrayList<Sign>();
 
-	public Chunk chunk;
-
-	public SignLogic(Chunk chunk) {
-		this.chunk = chunk;
-		findRelevantSigns(this.chunk);
+	public SignLogic(List<Block> blocks) {
+		findRelevantSigns(blocks);
 	}
 
 
 	@Override
-	public Map<Sign, SignType> getSigns() {
-		return signTypes;
+	public List<Sign> getSigns() {
+		return signList;
 	}
 
 	@Override
 	public void addSign(Sign sign, SignType type) {
-		this.signTypes.put(sign, type);
+		this.signTypes.put(type, sign);
 	}
-	
+
 	@Override
 	public void addSign(String signName, Sign sign) {
 		this.signs.put(signName, sign);
-		
+
 	}
 
 	@Override
@@ -46,26 +44,48 @@ public class SignLogic implements ISignLogic {
 	}
 
 	@Override
-	public SignType getSignType(Sign sign) {
-		String name = sign.getLine(1);
-		return signTypes.get(name);
-	}
-
-	@Override
-	public void findRelevantSigns(Chunk chunk) {
-		if(!chunk.isLoaded()) chunk.load();
-
-		BlockState[] states = chunk.getTileEntities();
-		for(int j = 0; j < states.length; j++) {
-			Material m = states[j].getType();
-			if(m.equals(Material.SIGN) || m.equals(Material.SIGN_POST) || m.equals(Material.WALL_SIGN)) {
-				Sign toAdd = (Sign) states[j];
-				String[] lines = toAdd.getLines();
+	public void findRelevantSigns(List<Block> blocks) {
+		for(Block b : blocks) {
+//			if(b.getType().equals(Material.SIGN) || b.getType().equals(Material.WALL_SIGN) || b.getType().equals(Material.SIGN_POST)) {
+			if(b.getState() instanceof Sign) {
+				Sign s = (Sign) b.getState();
+				String[] lines = s.getLines();
+				//Make sure it has a length of 4.
 				if(lines.length == 4) {
-					if(lines[0].equals("{train_station}")){
-						String stationName = lines[1];
-						addSign(stationName, toAdd);
-						addSign(toAdd, SignType.TRAIN_STATION);
+					if(lines[0].equals("{trains}")) {
+						if(lines[1].equals("buy_storage")) {
+							this.signList.add(s);
+							this.signTypes.put(SignType.ADD_STORAGE_CART, s);
+							this.signs.put(lines[1], s);
+						}
+						else if(lines[1].equals("sell_storage")) {
+							this.signList.add(s);
+							this.signTypes.put(SignType.REMOVE_STORAGE_CART, s);
+							this.signs.put(lines[1], s);
+						}
+						else if(lines[1].equals("buy_ride")) {
+							this.signList.add(s);
+							this.signTypes.put(SignType.ADD_RIDE_CART, s);
+							this.signs.put(lines[1], s);
+						}
+						else if(lines[1].equals("sell_ride")) {
+							this.signList.add(s);
+							this.signTypes.put(SignType.REMOVE_RIDE_CART, s);
+							this.signs.put(lines[1], s);
+						}
+						else if(lines[1].equals("Direction")) {
+							this.signList.add(s);
+							this.signTypes.put(SignType.TRAIN_STATION_DIRECTION, s);
+							this.signs.put(lines[1], s);
+						}
+					}
+					//TODO Could be used for house signs.
+					else if(lines[0].equals("{houses}")) {
+						
+					}
+					//TODO Could be used for bank signs.
+					else if(lines[0].equals("{banks}")) {
+						
 					}
 				}
 			}
@@ -78,7 +98,55 @@ public class SignLogic implements ISignLogic {
 		return this.signs.get(signName);
 	}
 	
-	public Chunk getChunk() {
-		return this.chunk;
+	@Override
+	public Sign getSign(SignType type) {
+		return this.signTypes.get(type);
+	}
+
+
+	@Override
+	public Map<SignType, Sign> getSignTypes() {
+		return signTypes;
+	}
+
+
+	@Override
+	public void updateTrain(String trainName) {
+		List<Sign> signsToChange = new ArrayList<Sign>();
+		//Get the signs to change.
+		for(SignType s : this.signTypes.keySet()) {
+			if(s.equals(SignType.ADD_RIDE_CART) || s.equals(SignType.ADD_STORAGE_CART) || s.equals(SignType.REMOVE_RIDE_CART) || s.equals(SignType.REMOVE_STORAGE_CART)) {
+				signsToChange.add(this.signTypes.get(s));
+			}
+		}
+		//Set the new value.
+		for(Sign s : signsToChange) {
+			s.setLine(3, trainName);
+		}
+		//Create new lists and update.
+		this.signList = signsToChange;
+		this.signTypes = new HashMap<SignType, Sign>();
+		this.signs = new HashMap<String, Sign>();
+		//Add to the map
+		for(Sign s : this.signTypes.values()) {
+			String[] lines = s.getLines();
+			if(lines[1].equals("buy_storage")) {
+				this.signTypes.put(SignType.ADD_STORAGE_CART, s);
+				this.signs.put(lines[1], s);
+			}
+			else if(lines[1].equals("sell_storage")) {
+				this.signTypes.put(SignType.REMOVE_STORAGE_CART, s);
+				this.signs.put(lines[1], s);
+			}
+			else if(lines[1].equals("buy_ride")) {
+				this.signTypes.put(SignType.ADD_RIDE_CART, s);
+				this.signs.put(lines[1], s);
+			}
+			else if(lines[1].equals("sell_ride")) {
+				this.signTypes.put(SignType.REMOVE_RIDE_CART, s);
+				this.signs.put(lines[1], s);
+			}
+		}
+		
 	}
 }

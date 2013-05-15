@@ -26,11 +26,11 @@ import org.bukkit.potion.PotionEffectType;
 import com.goldrushmc.bukkit.defaults.DefaultListener;
 
 public class PanningLis extends DefaultListener {
-	
+
 	public PanningLis(JavaPlugin plugin) {
 		super(plugin);
 	}
-	
+
 	int panDuration = 100;
 	public static HashMap<Player, Boolean> panningHash = new HashMap<Player, Boolean>();
 	public static HashMap<Player, Location> panningMoveHash = new HashMap<Player, Location>();
@@ -46,45 +46,47 @@ public class PanningLis extends DefaultListener {
 		boolean panning = panningHash.get(p).booleanValue();
 		if(eAction.equals(Action.RIGHT_CLICK_BLOCK)) {
 			if(!panning){
-				if(e.getItem().getType().equals(Material.BOWL)){
-					if(e.getItem().getItemMeta().hasDisplayName()) {
-						if(e.getItem().getItemMeta().getDisplayName().equals("Panning Tool")) {
-							if(e.getClickedBlock().getBiome().equals(Biome.RIVER)) {
-								boolean water = false;
-								for(Block b : p.getLineOfSight(null, 4)) {
-									if(b.getType().equals(Material.WATER) || b.getType().equals(Material.STATIONARY_WATER)) {
-										if(panningLocHash.containsKey(p)){
-											if(!e.getClickedBlock().getLocation().equals(panningLocHash.get(p))){	
-												ItemMeta meta = e.getItem().getItemMeta();
-												if(!meta.getLore().get(0).equals("Broken")) {
-													panSound(p, panDuration);
-													doPan(p, e);
+				if(e.getItem() != null) {
+					if(e.getItem().getType().equals(Material.BOWL)){
+						if(e.getItem().getItemMeta().hasDisplayName()) {
+							if(e.getItem().getItemMeta().getDisplayName().equals("Panning Tool")) {
+								if(e.getClickedBlock().getBiome().equals(Biome.RIVER)) {
+//									boolean water = false;
+									for(Block b : p.getLineOfSight(null, 4)) {
+										if(b.getType().equals(Material.WATER) || b.getType().equals(Material.STATIONARY_WATER)) {
+											if(panningLocHash.containsKey(p)){
+												if(!e.getClickedBlock().getLocation().equals(panningLocHash.get(p))){	
+													ItemMeta meta = e.getItem().getItemMeta();
+													if(!meta.getLore().get(0).equals("Broken")) {
+														panSound(p, panDuration);
+														doPan(p, e);
+													} else {
+														p.sendMessage(ChatColor.DARK_RED + "You can't pan with a broken tool!");
+													}
 												} else {
-													p.sendMessage(ChatColor.DARK_RED + "You can't pan with a broken tool!");
+													p.sendMessage(ChatColor.RED + "You won't find anything in that spot again!");
 												}
 											} else {
-												p.sendMessage(ChatColor.RED + "You won't find anything in that spot again!");
+												doPan(p, e);
+												panningLocHash.put(p, e.getClickedBlock().getLocation());
 											}
-										} else {
-											doPan(p, e);
-											panningLocHash.put(p, e.getClickedBlock().getLocation());
 										}
 									}
-								}
-							} else {
-								p.sendMessage(ChatColor.RED + "You can only pan in Rivers!");
-							}					
+								} else {
+									p.sendMessage(ChatColor.RED + "You can only pan in Rivers!");
+								}					
+							}
 						}
 					}
 				}
 			}
 		}
 	}
-	
+
 	public void doPan(Player p, PlayerInteractEvent e) {
 		panningMoveHash.put(p, p.getLocation());
 		panningLocHash.put(p, e.getClickedBlock().getLocation());
-		
+
 		//uses logic
 		List<String> lore = new ArrayList<String>();									
 		ItemMeta meta = e.getItem().getItemMeta();
@@ -92,7 +94,7 @@ public class PanningLis extends DefaultListener {
 		lore.add(usesLeft - 1 + " uses left");
 		meta.setLore(lore);
 		e.getItem().setItemMeta(meta);
-		
+
 		if(usesLeft - 1 == 0){
 			lore.clear();
 			lore.add("Broken");
@@ -100,41 +102,41 @@ public class PanningLis extends DefaultListener {
 			e.getItem().setItemMeta(meta);
 			p.sendMessage(ChatColor.RED + "Your tool will break after this pan!");
 		}
-		
+
 		panningHash.put(p, true);						
 		p.sendMessage(ChatColor.GOLD + "You begin to pan..");
 		p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, panDuration, 5));
 		Pan pan = new Pan(p);
 		Bukkit.getServer().getScheduler().runTaskLater(plugin, pan, panDuration);	
 	}
-	
+
 	public void panSound(Player p, int panDuration) {
 		SoundPlay sp = new SoundPlay(p);
 		for(int i = 0; i < panDuration / 20; i++){
 			Bukkit.getServer().getScheduler().runTaskLater(plugin, sp, i * 20);
 		}
 	}
-	
+
 	class SoundPlay implements Runnable{
 		Player p;
 		SoundPlay(Player player){
 			p = player;
 		}
-		
+
 		@Override
 		public void run() {
 			p.playSound(p.getLocation(), Sound.STEP_GRAVEL, 10, 1);	
 			p.playSound(p.getLocation(), Sound.SPLASH2, 10, 1);	
 		}
-		
+
 	}
-	
+
 	class Pan implements Runnable{
 		Player p;
 		Pan(Player player) {
 			p = player;
 		}
-		
+
 		@Override
 		public void run() {
 			if(p.getItemInHand().getItemMeta().hasDisplayName()) {

@@ -7,7 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.goldrushmc.bukkit.db.TrainScheduleTbl;
 import com.goldrushmc.bukkit.db.TrainStationTbl;
 import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
-import com.goldrushmc.bukkit.defaults.TrainDB;
+import com.goldrushmc.bukkit.defaults.DBAccess;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 
 public class Departure implements Runnable {
@@ -15,7 +15,7 @@ public class Departure implements Runnable {
 	private final DBTrainsAccessible db;
 
 	public Departure(final JavaPlugin plugin) {
-		this.db = new TrainDB(plugin);
+		this.db = new DBAccess(plugin);
 	}
 
 	@Override

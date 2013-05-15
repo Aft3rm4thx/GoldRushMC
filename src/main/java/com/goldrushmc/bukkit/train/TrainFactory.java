@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -361,7 +362,7 @@ public class TrainFactory {
 		if(trainToLink == null) return;
 		
 		//If the train is moving, we don't want to add carts to it.
-		if(trainToLink.isMoving()) { owner.sendMessage("The train is currently moving. Please wait until it has arrived at a station."); return; }
+		if(trainToLink.isMoving()) { owner.sendMessage(ChatColor.RED + "The train is currently moving. Please wait until it has arrived at a station."); return; }
 		
 		//If the train size is 15 long, it is the max size, and we should not add more.
 		if(trainToLink.size() == 15) { owner.sendMessage("The train is full! Please wait for the next train to come."); return; }
@@ -450,7 +451,7 @@ public class TrainFactory {
 		if(train == null) { owner.sendMessage("It appears this train does not exist."); return; }
 		
 		//If the train is moving, we don't want to add carts to it.
-		if(train.isMoving()) { owner.sendMessage("The train is currently moving. Please wait until it has arrived at a station."); return; }
+		if(train.isMoving()) { owner.sendMessage(ChatColor.RED + "The train is currently moving. Please wait until it has arrived at a station."); return; }
 
 		/*
 		 * This list will be occupied by either the chest owner or ride owner list. 

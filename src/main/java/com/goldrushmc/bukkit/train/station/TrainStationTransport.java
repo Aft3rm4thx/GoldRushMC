@@ -20,9 +20,11 @@ public class TrainStationTransport extends TrainStation {
 
 
 
-	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world) {
+	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world) throws TooLowException {
 		super(plugin, stationName, corners, world);
-		// TODO Auto-generated constructor stub
+	}
+	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world, Material stopMat) throws TooLowException {
+		super(plugin, stationName, corners, world, stopMat);
 	}
 
 	public void createTransport() {
