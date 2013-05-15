@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -51,14 +52,21 @@ public class GunLis extends DefaultListener {
 						int max = Material.DIAMOND_HOE.getMaxDurability();
 						if (p.getItemInHand().getDurability() < 25) {
 							if (cockHash.get(p)) {
-								Bullet bullet = p.launchProjectile(Bullet.class);
-								p.sendMessage(String.valueOf(bullet.getEntityId()));
+								//Bullet bullet = p.launchProjectile(Bullet.class);
+								//p.sendMessage(String.valueOf(bullet.getEntityId()));
 								//p.getWorld().spawnEntity(p.getEyeLocation(), EntityBullet);
 								
+								//gun fire sound
 								p.playSound(p.getLocation(), Sound.ZOMBIE_METAL,10, -1f);
+								//gun fire smoke effect
+								p.playEffect(getSpawnLoc(p), Effect.SMOKE, 0);
+								
 								Snowball snowball = p.launchProjectile(Snowball.class);
-								snowball.setVelocity(p.getLocation().getDirection().multiply(7));
-								snowball.setFallDistance(0f);
+								snowball.setVelocity(p.getLocation().getDirection().multiply(5));
+								
+								HeightModTask hmt = new HeightModTask(snowball);
+								Bukkit.getServer().getScheduler().runTaskLater(plugin, hmt, 1);
+								
 								p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() + 4));
 								cockHash.put(p, false);
 							} else {
@@ -86,7 +94,6 @@ public class GunLis extends DefaultListener {
 				if (p.getItemInHand().getItemMeta().hasDisplayName()) {
 					if (p.getItemInHand().getItemMeta().getDisplayName()
 							.equals("Colt")) {
-						int max = Material.DIAMOND_HOE.getMaxDurability();
 						if (p.getItemInHand().getDurability() < 25) {
 							cockHash.put(p, true);
 							p.playSound(p.getLocation(), Sound.DOOR_OPEN, 5, 1);
@@ -103,6 +110,22 @@ public class GunLis extends DefaultListener {
 		for(int i = 0; i < 6; i++){
 			Bukkit.getServer().getScheduler().runTaskLater(plugin, rt, i * 10);
 		}
+	}
+	
+	class HeightModTask implements Runnable{
+		Snowball s;
+		HeightModTask(Snowball snowball){
+			s = snowball;
+		}
+
+		@Override
+		public void run() {			
+			if(!s.isDead()){
+				s.setFallDistance(0);
+				Bukkit.getServer().getScheduler().runTaskLater(plugin, this, 1);
+			}
+		}
+
 	}
 
 	class ReloadTask implements Runnable{

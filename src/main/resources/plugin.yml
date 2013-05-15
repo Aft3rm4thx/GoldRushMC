@@ -27,13 +27,13 @@ commands:
    permission: goldrushmc.station.create
    usage: /<command> [stationType, stationName]
    
-  gun:
+  Gun:
    description: Get your gun
    aliases: [gun]
    permission: golrushmc.guns
    usage: /<command>
    
-  panningtool:
+  PanningTool:
    description: Retriever of Gold Panning Pan
    aliases: [pt]
    permission: golrushmc.goldpan

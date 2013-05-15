@@ -86,7 +86,7 @@ public class findCorners {
 	void getBothSouthern(Location locOne, Location locTwo, Location locThree, Location locFour){
 		int mostSouthern = Integer.MIN_VALUE;
 		Location first = null;
-		int[] zArray = new int[] {locOne.getBlockZ(), locTwo.getBlockZ(), locTwo.getBlockZ(), locFour.getBlockZ()};
+		int[] zArray = new int[] {locOne.getBlockZ(), locTwo.getBlockZ(), locThree.getBlockZ(), locFour.getBlockZ()};
 		for(int i=0; i<4;i++){
 			if(zArray[i] > mostSouthern) {
 				switch(i) {
@@ -100,11 +100,11 @@ public class findCorners {
 					break;
 				case 2: mostSouthernOne = locThree;
 					mostSouthern = zArray[i];
-					first = locTwo;
+					first = locThree;
 					break;
 				case 3: mostSouthernOne = locFour;
 					mostSouthern = zArray[i];
-					first = locTwo;
+					first = locFour;
 					break;
 				}
 			}
@@ -121,11 +121,11 @@ public class findCorners {
 						break;
 					}
 				case 2: mostSouthernTwo = locThree;
-					if(first != locTwo){
+					if(first != locThree){
 						break;
 					}
 				case 3: mostSouthernTwo = locFour;
-					if(first != locTwo){
+					if(first != locFour){
 						break;
 					}
 				}
@@ -136,7 +136,7 @@ public class findCorners {
 	void getBothNorthern(Location locOne, Location locTwo, Location locThree, Location locFour){
 		int mostNorthern = Integer.MAX_VALUE;
 		Location first = null;
-		int[] zArray = new int[] {locOne.getBlockZ(), locTwo.getBlockZ(), locTwo.getBlockZ(), locFour.getBlockZ()};
+		int[] zArray = new int[] {locOne.getBlockZ(), locTwo.getBlockZ(), locThree.getBlockZ(), locFour.getBlockZ()};
 		for(int i=0; i<4;i++){
 			if(zArray[i] < mostNorthern) {
 				switch(i) {
@@ -150,11 +150,11 @@ public class findCorners {
 					break;
 				case 2: mostNorthernOne = locThree;
 					mostNorthern = zArray[i];
-					first = locTwo;
+					first = locThree;
 					break;
 				case 3: mostNorthernOne = locFour;
 					mostNorthern = zArray[i];
-					first = locTwo;
+					first = locFour;
 					break;
 				}
 			}
@@ -171,11 +171,11 @@ public class findCorners {
 						break;
 					}
 				case 2: mostNorthernTwo = locThree;
-					if(first != locTwo){
+					if(first != locThree){
 						break;
 					}
 				case 3: mostNorthernTwo = locFour;
-					if(first != locTwo){
+					if(first != locFour){
 						break;
 					}
 				}
@@ -186,7 +186,7 @@ public class findCorners {
 	void getBothEastern(Location locOne, Location locTwo, Location locThree, Location locFour){
 		int mostEastern = Integer.MIN_VALUE;
 		Location first = null;
-		int[] XArray = new int[] {locOne.getBlockX(), locTwo.getBlockX(), locTwo.getBlockX(), locFour.getBlockX()};
+		int[] XArray = new int[] {locOne.getBlockX(), locTwo.getBlockX(), locThree.getBlockX(), locFour.getBlockX()};
 		for(int i=0; i<4;i++){
 			if(XArray[i] > mostEastern) {
 				switch(i) {
@@ -200,11 +200,11 @@ public class findCorners {
 					break;
 				case 2: mostEasternOne = locThree;
 					mostEastern = XArray[i];
-					first = locTwo;
+					first = locThree;
 					break;
 				case 3: mostEasternOne = locFour;
 					mostEastern = XArray[i];
-					first = locTwo;
+					first = locFour;
 					break;
 				}
 			}
@@ -221,11 +221,11 @@ public class findCorners {
 						break;
 					}
 				case 2: mostEasternTwo = locThree;
-					if(first != locTwo){
+					if(first != locThree){
 						break;
 					}
 				case 3: mostEasternTwo = locFour;
-					if(first != locTwo){
+					if(first != locFour){
 						break;
 					}
 				}
@@ -236,7 +236,7 @@ public class findCorners {
 	void getBothWestern(Location locOne, Location locTwo, Location locThree, Location locFour){
 		int mostWestern = Integer.MAX_VALUE;
 		Location first = null;
-		int[] XArray = new int[] {locOne.getBlockX(), locTwo.getBlockX(), locTwo.getBlockX(), locFour.getBlockX()};
+		int[] XArray = new int[] {locOne.getBlockX(), locTwo.getBlockX(), locThree.getBlockX(), locFour.getBlockX()};
 		for(int i=0; i<4;i++){
 			if(XArray[i] < mostWestern) {
 				switch(i) {
@@ -250,11 +250,11 @@ public class findCorners {
 					break;
 				case 2: mostWesternOne = locThree;
 					mostWestern = XArray[i];
-					first = locTwo;
+					first = locThree;
 					break;
 				case 3: mostWesternOne = locFour;
 					mostWestern = XArray[i];
-					first = locTwo;
+					first = locFour;
 					break;
 				}
 			}
@@ -271,11 +271,11 @@ public class findCorners {
 						break;
 					}
 				case 2: mostWesternTwo = locThree;
-					if(first != locTwo){
+					if(first != locThree){
 						break;
 					}
 				case 3: mostWesternTwo = locFour;
-					if(first != locTwo){
+					if(first != locFour){
 						break;
 					}
 				}
