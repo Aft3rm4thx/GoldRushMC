@@ -1,8 +1,10 @@
 package com.goldrushmc.bukkit.train.signs;
 
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Chunk;
+import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 
 /**
@@ -18,7 +20,7 @@ public interface ISignLogic {
 	 * 
 	 * @return The set of signs, {@code Set<Sign>}.
 	 */
-	public Map<Sign, SignType> getSigns();
+	public Map<SignType, Sign> getSignTypes();
 	
 	/**
 	 * Add a {@link Sign} to the permission mapping.
@@ -42,31 +44,32 @@ public interface ISignLogic {
  	public void removeSign(String signName);
 	
 	/**
-	 * Finds the sign type for the specified sign.
-	 * 
-	 * @param sign The {@link Sign} to check.
-	 * @return The {@link SignType}, if any, of the sign.
-	 */
-	public SignType getSignType(Sign sign);
-	
-	/**
 	 * Gets a {@link Sign} with the specified name.
 	 * 
 	 * @param signName The {@link Sign} name.
 	 * @return The {@link Sign}
 	 */
 	public Sign getSign(String signName);
+	
+	public Sign getSign(SignType type);
 	/**
 	 * Finds all of the relevant {@link Sign}s to Gold Rush MC, within a given chunk.
 	 * 
 	 * @param chunk The {@link Chunk} to search.
 	 */
-	public void findRelevantSigns(Chunk chunk);
+	public void findRelevantSigns(List<Block> blocks);
 	
 	/**
 	 * Gets the {@link Chunk} associated with this logic.
 	 * @return
 	 */
-	public Chunk getChunk();
+	public List<Sign> getSigns();
+	
+	/**
+	 * Updates all the signs with the right train name, so players can buy and sell properly from that train.
+	 * 
+	 * @param trainName
+	 */
+	public void updateTrain(String trainName);
 	
 }

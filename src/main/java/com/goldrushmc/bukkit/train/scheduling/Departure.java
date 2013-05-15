@@ -1,31 +1,33 @@
 package com.goldrushmc.bukkit.train.scheduling;
 
+import java.util.List;
+
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
+import com.goldrushmc.bukkit.db.TrainScheduleTbl;
+import com.goldrushmc.bukkit.db.TrainStationTbl;
 import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
-import com.goldrushmc.bukkit.defaults.TrainDB;
+import com.goldrushmc.bukkit.defaults.DBAccess;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 
 public class Departure implements Runnable {
 
-	private final TrainStation station;
 	private final DBTrainsAccessible db;
 
-	public Departure(final TrainStation station, final JavaPlugin plugin) {
-		this.station = station;
-		this.db = new TrainDB(plugin);
+	public Departure(final JavaPlugin plugin) {
+		this.db = new DBAccess(plugin);
 	}
 
 	@Override
 	public void run() {
-		MinecartGroup[] trains = station.getDepartingTrains();
-		for(int i = 0; i < trains.length; i++) {
-			trains[i].setForwardForce(0.4);
-//			TrainTbl train = db.getTrain(trains[i].getProperties().getTrainName());
-			db.getStatuses();
+		List<TrainStation> stations = TrainStation.getTrainStations();
+		for(TrainStation station : stations) {
+			TrainStationTbl sClass = db.getTrainStation(station.getStationName());
+			for(TrainScheduleTbl tClass : sClass.getDepartures()) {
+				
+			}
 		}
-
 	}
+
 
 }

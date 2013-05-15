@@ -14,7 +14,11 @@ import org.bukkit.permissions.Permission;
 public enum SignType {
 	TOWN(new Permission("goldrushmc.sign.town")),
 	TRAIN_STATION(new Permission("goldrushmc.sign.station")),
-	ADD_CART(new Permission("goldrushmc.sign.addcart")),
+	TRAIN_STATION_DIRECTION(new Permission("goldrushmc.sign.direction")),
+	ADD_STORAGE_CART(new Permission("goldrushmc.sign.addstorecart")),
+	REMOVE_STORAGE_CART(new Permission("goldrushmc.sign.removestorecart")),
+	ADD_RIDE_CART(new Permission("goldrushmc.sign.addridecart")),
+	REMOVE_RIDE_CART(new Permission("goldrushmc.sign.removeridecart")),
 	FIX_BRIDGE(new Permission("goldrushmc.sign.bridgerepair")),
 	PAY_TAX(new Permission("goldrushmc.sign.paytax")),
 	UPGRADE_HOUSE(new Permission("goldrushmc.sign.house.upgrade")),
@@ -27,5 +31,9 @@ public enum SignType {
 	
 	private SignType(Permission perm) {
 		this.perm = perm;
+	}
+	
+	public static Permission getSignPermission(SignType type) {
+		return type.perm;
 	}
 }

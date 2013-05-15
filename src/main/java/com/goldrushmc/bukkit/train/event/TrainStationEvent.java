@@ -8,7 +8,7 @@ import com.goldrushmc.bukkit.train.station.TrainStation;
 public abstract class TrainStationEvent extends Event implements Cancellable  {
 
 
-	private final TrainStation station;
+	protected final TrainStation station;
 	private boolean cancelled;
 	
 	public TrainStationEvent(final TrainStation station) {
