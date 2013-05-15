@@ -7,8 +7,6 @@ import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -22,22 +20,23 @@ public class TrainStationTransport extends TrainStation {
 
 	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world) throws TooLowException {
 		super(plugin, stationName, corners, world);
+		createTransport();
 	}
 	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world, Material stopMat) throws TooLowException {
 		super(plugin, stationName, corners, world, stopMat);
+		createTransport();
 	}
 
 	public void createTransport() {
 		
 		if(this.trains == null) this.trains = new ArrayList<MinecartGroup>();
 		int trainNum = this.trains.size() + 1;
-		Block starting = getStartingRail();
 		
 		List<EntityType> carts = new ArrayList<EntityType>();
 		carts.add(EntityType.MINECART_CHEST);
 		carts.add(EntityType.MINECART_FURNACE);
 		
-		MinecartGroup train = MinecartGroup.spawn(starting, this.direction, carts);
+		MinecartGroup train = MinecartGroup.spawn(this.stopBlock, this.direction, carts);
 		
 		TrainProperties tp = train.getProperties();
 		tp.setName(stationName + "_" + trainNum);
@@ -45,21 +44,8 @@ public class TrainStationTransport extends TrainStation {
 		tp.setSpeedLimit(0.4);
 		tp.setPublic(false);
 		tp.setManualMovementAllowed(false);
+		tp.setKeepChunksLoaded(true);
+		tp.setPickup(false);
 		train.setProperties(tp);
-	}
-	
-	/**
-	 * Starting rails should be denoted by an Iron Block
-	 * 
-	 * @return the Rail block
-	 */
-	public Block getStartingRail() {
-		for(Block rail : this.rails) {
-			Block toCheck = rail.getRelative(BlockFace.DOWN);
-			if(toCheck.getType().equals(Material.IRON_BLOCK)) {
-				return rail;
-			}
-		}
-		return null;
 	}
 }

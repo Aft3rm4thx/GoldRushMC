@@ -1,11 +1,11 @@
 package com.goldrushmc.bukkit.train.station;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -19,6 +19,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.goldrushmc.bukkit.db.TrainScheduleTbl;
+import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
+import com.goldrushmc.bukkit.db.TrainStationTbl;
 import com.goldrushmc.bukkit.db.TrainTbl;
 import com.goldrushmc.bukkit.defaults.DBAccess;
 import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
@@ -78,20 +80,16 @@ public abstract class TrainStation {
 			if(!chunk.contains(loc.getChunk()))	chunk.add(loc.getChunk());
 		}
 		this.world = world;
-		Bukkit.getLogger().info("Creating a perimeter...");
 		this.perimeter = generatePerimeter();
 		this.surfaceBlocks = generateSurface();
 		this.area = getFullArea(this.surfaceBlocks);
 		this.trainArea = getTrainArea(this.surfaceBlocks);
 		this.rails = findRails();
 		this.stopBlock = this.findStopBlock(defaultStop);
-
-		Bukkit.getLogger().info("Finding Signs...");
 		this.signs = generateSignLogic();
 		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
 		BlockFace tempDir = null;
 		if(dir != null) {
-			Bukkit.getLogger().info("Sign isn't null!");
 			tempDir = TrainTools.getDirection(dir.getLine(2));
 		}
 		if(tempDir != null) {
@@ -100,13 +98,44 @@ public abstract class TrainStation {
 		else {
 			this.direction = BlockFace.SELF;
 		}
-		
-		Bukkit.getLogger().info("The direction set is: " + this.direction.name());
 		findWorkers();
 		findPlayers();
 		//Add to the list of stations! IMPORTANT
 		trainStations.add(this);
 		TrainStationLis.addStation(this);
+	}
+
+	public void addToDB() {
+		TrainStationTbl station = new TrainStationTbl();
+		station.setStationName(stationName);
+		Set<TrainStationLocationTbl> corners = new HashSet<TrainStationLocationTbl>();
+		for(int i = 0; i < 4; i++) {
+			TrainStationLocationTbl corner = new TrainStationLocationTbl();
+			CardinalMarker cm = null;
+			//Iterate through corners.
+			switch(i) {
+			case 0: cm = CardinalMarker.NORTH_EAST_CORNER; break;
+			case 1: cm = CardinalMarker.NORTH_WEST_CORNER; break;
+			case 2: cm = CardinalMarker.SOUTH_EAST_CORNER; break;
+			case 3: cm = CardinalMarker.SOUTH_WEST_CORNER; break;
+			}
+			//Set corner
+			switch(cm) {
+			case NORTH_EAST_CORNER: corner.setCorner("North_East"); break;
+			case NORTH_WEST_CORNER:	corner.setCorner("North_West"); break;
+			case SOUTH_EAST_CORNER:	corner.setCorner("South_East"); break;
+			case SOUTH_WEST_CORNER:	corner.setCorner("South_West"); break;
+			}
+			Location loc = this.corners.get(cm);
+			corner.setStation(station);
+			corner.setX(loc.getBlockX());
+			corner.setY(loc.getBlockY());
+			corner.setZ(loc.getBlockZ());
+			corners.add(corner);
+		}
+		db.getDB().save(corners);
+		station.setCorners(corners);
+		db.getDB().save(station);
 	}
 
 	/**
@@ -130,30 +159,27 @@ public abstract class TrainStation {
 			if(!chunk.contains(loc.getChunk()))	chunk.add(loc.getChunk());
 		}
 		this.world = world;
-		Bukkit.getLogger().info("Creating a perimeter...");
 		this.perimeter = generatePerimeter();
 		this.surfaceBlocks = generateSurface();
 		this.area = getFullArea(this.surfaceBlocks);
 		this.trainArea = getTrainArea(this.surfaceBlocks);
 		this.rails = findRails();
 		this.stopBlock = this.findStopBlock(stopMat);
-
-		Bukkit.getLogger().info("Finding Signs...");
 		this.signs = generateSignLogic();
-		if(BlockFace.valueOf(this.signs.getSign(SignType.TRAIN_STATION_DIRECTION).getLine(3)) != null) {
-			this.direction = BlockFace.valueOf(this.signs.getSign(SignType.TRAIN_STATION_DIRECTION).getLine(3));	
+		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
+		BlockFace tempDir = null;
+		if(dir != null) {
+			tempDir = TrainTools.getDirection(dir.getLine(2));
+		}
+		if(tempDir != null) {
+			this.direction = tempDir;	
 		}
 		else {
-			//Default to north.
-			this.direction = BlockFace.NORTH;
+			this.direction = BlockFace.SELF;
 		}
-		Bukkit.getLogger().info("There are " + signs.getSigns().size() + " signs in the station.");
 		findWorkers();
-		Bukkit.getLogger().info("Amount of Workers: " + getWorkers().size());
 		findPlayers();
-		Bukkit.getLogger().info("Amount of Visitors: " + getVisitors().size());
 
-		Bukkit.getLogger().info("Adding to listener and listing...");
 		//Add to the list of stations! IMPORTANT
 		trainStations.add(this);
 		TrainStationLis.addStation(this);
@@ -356,7 +382,7 @@ public abstract class TrainStation {
 	public Block findStopBlock(Material m) {
 		for(Block b : this.trainArea) {
 			if(b.getType().equals(m)) {
-				return b;
+				return b.getRelative(BlockFace.UP);
 			}
 		}
 		return null;
