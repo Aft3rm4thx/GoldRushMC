@@ -139,7 +139,7 @@ public class GunLis extends DefaultListener {
 	if (p.getItemInHand().getType().equals(Material.CARROT_STICK)) {
 		if (p.getItemInHand().getItemMeta().hasDisplayName()) {
 			if (p.getItemInHand().getItemMeta().getDisplayName().equals("Colt")) {
-				if (p.getItemInHand().getDurability() > 1) {
+				if (p.getItemInHand().getDurability() > 1 && p.getItemInHand().getDurability() < 26) {
 					for (int i = 0; i < 36; i++) {
 						if(p.getInventory().getItem(i) != null) {
 							if(p.getInventory().getItem(i).getTypeId() == 332){
