@@ -51,6 +51,10 @@ public class GunLis extends DefaultListener {
 						int max = Material.DIAMOND_HOE.getMaxDurability();
 						if (p.getItemInHand().getDurability() < 25) {
 							if (cockHash.get(p)) {
+								Bullet bullet = p.launchProjectile(Bullet.class);
+								p.sendMessage(String.valueOf(bullet.getEntityId()));
+								//p.getWorld().spawnEntity(p.getEyeLocation(), EntityBullet);
+								
 								p.playSound(p.getLocation(), Sound.ZOMBIE_METAL,10, -1f);
 								Snowball snowball = p.launchProjectile(Snowball.class);
 								snowball.setVelocity(p.getLocation().getDirection().multiply(7));
