@@ -26,6 +26,7 @@ import com.goldrushmc.bukkit.train.event.ExitTrainStationEvent;
 import com.goldrushmc.bukkit.train.event.StationSignEvent;
 import com.goldrushmc.bukkit.train.event.TrainEnterStationEvent;
 import com.goldrushmc.bukkit.train.event.TrainExitStationEvent;
+import com.goldrushmc.bukkit.train.event.TrainFullStopEvent;
 import com.goldrushmc.bukkit.train.signs.SignType;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 
@@ -70,18 +71,22 @@ public class TrainStationLis extends DefaultListener {
 	public void onTrainMove(MemberBlockChangeEvent event) {
 		Block to = event.getTo(), from = event.getFrom();
 
-		//Entering station
-		if(stationArea.containsKey(to) && !stationArea.containsKey(from)) {
-			if(to.getRelative(BlockFace.DOWN).equals(stationStore.get(stationArea.get(to)).getStopBlock())) {
-				event.getMember().getGroup().stop();
-			}
-			else {
+		if(stationArea.containsKey(to)) {
+			if(!stationArea.containsKey(from)) {
+				//Entering station
 				String station = stationArea.get(to);
 				TrainEnterStationEvent enter = new TrainEnterStationEvent(stationStore.get(station), event.getGroup());
 				Bukkit.getServer().getPluginManager().callEvent(enter);	
+
+			}
+			//The train has hit the stop block, and needs to stop.
+			else if(to.getRelative(BlockFace.DOWN).equals(stationStore.get(stationArea.get(to)).getStopBlock())) {
+				String station = stationArea.get(to);
+				TrainFullStopEvent stop = new TrainFullStopEvent(stationStore.get(station), event.getGroup());
+				Bukkit.getServer().getPluginManager().callEvent(stop);
 			}
 		}
-		//Leaving station
+			//Leaving station
 		else if(!stationArea.containsKey(to) && stationArea.containsKey(from)) {
 			String station = stationArea.get(from);
 			TrainExitStationEvent exit = new TrainExitStationEvent(stationStore.get(station), event.getGroup());
@@ -128,7 +133,7 @@ public class TrainStationLis extends DefaultListener {
 		Player player = event.getPlayer();
 		SignType type = event.getSignType();
 		TrainStation station = event.getTrainStation();
-		String trainName = station.findNextDeparture().getProperties().getTrainName(); 
+		String trainName = station.getDepartingTrain();
 		
 		//Determine which thing to perform.
 		switch(type) {
@@ -164,13 +169,17 @@ public class TrainStationLis extends DefaultListener {
 
 	@EventHandler
 	public void onTrainDepart(TrainExitStationEvent event) {
-		event.getTrain();
-		event.getTrainStation();
 	}
-
+	
+	//TODO This may be useless. Depends on how large the station is, and how many directions the station can take.
 	@EventHandler
 	public void onTrainArrive(TrainEnterStationEvent event) {
-
+	}
+	
+	@EventHandler
+	public void onTrainNextToDepart(TrainFullStopEvent event) {
+		event.getTrain().stop(true);
+		event.getTrainStation().changeSignLogic(event.getTrain().getProperties().getTrainName());
 	}
 
 	public void populate() {

@@ -4,28 +4,24 @@ import java.util.List;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-import com.goldrushmc.bukkit.db.TrainScheduleTbl;
-import com.goldrushmc.bukkit.db.TrainStationTbl;
-import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
-import com.goldrushmc.bukkit.defaults.DBAccess;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 
 public class Departure implements Runnable {
 
-	private final DBTrainsAccessible db;
+//	private final DBTrainsAccessible db;
 
 	public Departure(final JavaPlugin plugin) {
-		this.db = new DBAccess(plugin);
+//		this.db = new DBAccess(plugin);
 	}
 
 	@Override
 	public void run() {
 		List<TrainStation> stations = TrainStation.getTrainStations();
+		//If the list is null, we can't quite send trains on their way!
+		if(stations == null) return;
+		//For each station, send the next train on its way, and bring the next forward.
 		for(TrainStation station : stations) {
-			TrainStationTbl sClass = db.getTrainStation(station.getStationName());
-			for(TrainScheduleTbl tClass : sClass.getDepartures()) {
-				
-			}
+			station.pushQueue();
 		}
 	}
 

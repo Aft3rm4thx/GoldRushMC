@@ -12,7 +12,11 @@ import com.goldrushmc.bukkit.bank.InventoryLis;
 import com.goldrushmc.bukkit.commands.CreateTrainStation;
 import com.goldrushmc.bukkit.commands.ShowVisitorsCommand;
 import com.goldrushmc.bukkit.commands.StationWand;
+import com.goldrushmc.bukkit.commands.TrainCycleCommand;
 import com.goldrushmc.bukkit.db.BankTbl;
+import com.goldrushmc.bukkit.db.CartListTbl;
+import com.goldrushmc.bukkit.db.ItemForeignKeyTbl;
+import com.goldrushmc.bukkit.db.ItemTbl;
 import com.goldrushmc.bukkit.db.JobTbl;
 import com.goldrushmc.bukkit.db.PlayerTbl;
 import com.goldrushmc.bukkit.db.TownTbl;
@@ -28,7 +32,6 @@ import com.goldrushmc.bukkit.panning.PanningTool;
 import com.goldrushmc.bukkit.train.listeners.TrainLis;
 import com.goldrushmc.bukkit.train.listeners.TrainStationLis;
 import com.goldrushmc.bukkit.train.listeners.WandLis;
-import com.goldrushmc.bukkit.train.scheduling.Departure;
 import com.goldrushmc.bukkit.tunnelcollapse.SettingsManager;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelCollapseCommand;
 import com.goldrushmc.bukkit.tunnelcollapse.TunnelsListener;
@@ -47,7 +50,7 @@ public final class Main extends JavaPlugin{
 
 	@Override
 	public void onEnable() {
-		setupDB();
+//		setupDB();
 		
 		//Add commands
 		getCommand("StationWand").setExecutor(new StationWand(this));
@@ -56,6 +59,7 @@ public final class Main extends JavaPlugin{
 		getCommand("Gun").setExecutor(new GunTool(this));
 		getCommand("PanningTool").setExecutor(new PanningTool(this));
 		getCommand("ShowVisitors").setExecutor(new ShowVisitorsCommand(this));
+		getCommand("TrainCycle").setExecutor(new TrainCycleCommand(this));
 		
 		
 		//Register listeners
@@ -72,10 +76,8 @@ public final class Main extends JavaPlugin{
 		settings.setup(this);
 		
 		//Populate the train station listener maps
+		//This only works if the database has data to make train stations with....
 		tsl.populate();
-		
-		//TODO Create scheduled train runs. This is a SHELL.
-		getServer().getScheduler().scheduleSyncRepeatingTask(this, new Departure(this), 6000, 6000);
 		
 		getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");		
 	}
@@ -91,6 +93,9 @@ public final class Main extends JavaPlugin{
 			getDatabase().find(TownTbl.class).findRowCount();
 			getDatabase().find(BankTbl.class).findRowCount();
 			getDatabase().find(JobTbl.class).findRowCount();
+			getDatabase().find(CartListTbl.class).findRowCount();
+			getDatabase().find(ItemForeignKeyTbl.class).findRowCount();
+			getDatabase().find(ItemTbl.class).findRowCount();
 		} catch (PersistenceException | NullPointerException e) {
 			getLogger().info("Installing database for " + getDescription().getName() + " due to first time use.");
 			installDDL();
@@ -109,6 +114,9 @@ public final class Main extends JavaPlugin{
 		list.add(TownTbl.class);
 		list.add(BankTbl.class);
 		list.add(JobTbl.class);
+		list.add(CartListTbl.class);
+		list.add(ItemForeignKeyTbl.class);
+		list.add(ItemTbl.class);
 		return list;
 	}
 	

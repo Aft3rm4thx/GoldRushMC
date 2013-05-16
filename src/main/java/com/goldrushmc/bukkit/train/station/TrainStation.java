@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
+import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.goldrushmc.bukkit.db.TrainScheduleTbl;
 import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
 import com.goldrushmc.bukkit.db.TrainStationTbl;
@@ -45,7 +46,7 @@ public abstract class TrainStation {
 	public static DBTrainsAccessible db;
 
 	protected String stationName;
-	protected transient String departingTrain;
+	protected volatile String departingTrain;
 	protected final ISignLogic signs;
 	protected final BlockFace direction;
 	protected volatile List<Player> visitors = new ArrayList<Player>();
@@ -99,43 +100,9 @@ public abstract class TrainStation {
 			this.direction = BlockFace.SELF;
 		}
 		findWorkers();
-		findPlayers();
-		//Add to the list of stations! IMPORTANT
+		//Add to the list of stations for both the listener and static class instance! IMPORTANT
 		trainStations.add(this);
 		TrainStationLis.addStation(this);
-	}
-
-	public void addToDB() {
-		TrainStationTbl station = new TrainStationTbl();
-		station.setStationName(stationName);
-		Set<TrainStationLocationTbl> corners = new HashSet<TrainStationLocationTbl>();
-		for(int i = 0; i < 4; i++) {
-			TrainStationLocationTbl corner = new TrainStationLocationTbl();
-			CardinalMarker cm = null;
-			//Iterate through corners.
-			switch(i) {
-			case 0: cm = CardinalMarker.NORTH_EAST_CORNER; break;
-			case 1: cm = CardinalMarker.NORTH_WEST_CORNER; break;
-			case 2: cm = CardinalMarker.SOUTH_EAST_CORNER; break;
-			case 3: cm = CardinalMarker.SOUTH_WEST_CORNER; break;
-			}
-			//Set corner
-			switch(cm) {
-			case NORTH_EAST_CORNER: corner.setCorner("North_East"); break;
-			case NORTH_WEST_CORNER:	corner.setCorner("North_West"); break;
-			case SOUTH_EAST_CORNER:	corner.setCorner("South_East"); break;
-			case SOUTH_WEST_CORNER:	corner.setCorner("South_West"); break;
-			}
-			Location loc = this.corners.get(cm);
-			corner.setStation(station);
-			corner.setX(loc.getBlockX());
-			corner.setY(loc.getBlockY());
-			corner.setZ(loc.getBlockZ());
-			corners.add(corner);
-		}
-		db.getDB().save(corners);
-		station.setCorners(corners);
-		db.getDB().save(station);
 	}
 
 	/**
@@ -178,12 +145,48 @@ public abstract class TrainStation {
 			this.direction = BlockFace.SELF;
 		}
 		findWorkers();
-		findPlayers();
 
-		//Add to the list of stations! IMPORTANT
+		//Add to the list of stations for both the listener and static class instance! IMPORTANT
 		trainStations.add(this);
 		TrainStationLis.addStation(this);
 	}
+
+	/**
+	 * Adds the train station to the database, in case of a server wide crash.
+	 */
+	public void addToDB() {
+		TrainStationTbl station = new TrainStationTbl();
+		station.setStationName(stationName);
+		Set<TrainStationLocationTbl> corners = new HashSet<TrainStationLocationTbl>();
+		for(int i = 0; i < 4; i++) {
+			TrainStationLocationTbl corner = new TrainStationLocationTbl();
+			CardinalMarker cm = null;
+			//Iterate through corners.
+			switch(i) {
+			case 0: cm = CardinalMarker.NORTH_EAST_CORNER; break;
+			case 1: cm = CardinalMarker.NORTH_WEST_CORNER; break;
+			case 2: cm = CardinalMarker.SOUTH_EAST_CORNER; break;
+			case 3: cm = CardinalMarker.SOUTH_WEST_CORNER; break;
+			}
+			//Set corner
+			switch(cm) {
+			case NORTH_EAST_CORNER: corner.setCorner("North_East"); break;
+			case NORTH_WEST_CORNER:	corner.setCorner("North_West"); break;
+			case SOUTH_EAST_CORNER:	corner.setCorner("South_East"); break;
+			case SOUTH_WEST_CORNER:	corner.setCorner("South_West"); break;
+			}
+			Location loc = this.corners.get(cm);
+			corner.setStation(station);
+			corner.setX(loc.getBlockX());
+			corner.setY(loc.getBlockY());
+			corner.setZ(loc.getBlockZ());
+			corners.add(corner);
+		}
+		db.getDB().save(corners);
+		station.setCorners(corners);
+		db.getDB().save(station);
+	}
+
 
 	public MinecartGroup[] getDepartingTrains() {
 		long current = this.world.getTime();
@@ -312,13 +315,11 @@ public abstract class TrainStation {
 	}
 
 	protected void findWorkers() {
+		//TODO
 	}
 
 	public List<Block> getSurface() {
 		return this.surfaceBlocks;
-	}
-
-	public void findPlayers() {
 	}
 
 	public void addVisitor(Player visitor) {
@@ -357,10 +358,29 @@ public abstract class TrainStation {
 	public MinecartGroup findNextDeparture() {
 		for(MinecartGroup mg : this.trains) {
 			if(mg.get(0).getGroundBlock().equals(this.stopBlock)) {
+				//Mark the next train name.
+				this.departingTrain = mg.getProperties().getTrainName();
 				return mg;
 			}
 		}
 		return null;
+	}
+	
+	public String getDepartingTrain() {
+		return departingTrain;
+	}
+
+	public void pushQueue() {
+		MinecartGroup mg = findNextDeparture();
+		mg.setForwardForce(0.4);
+		if(mg.get(0) instanceof MinecartMemberFurnace) {
+			((MinecartMemberFurnace) mg.get(0)).getCoalFromNeighbours();
+		}
+		for(MinecartGroup train : this.trains) {
+			if(!train.equals(mg)) {
+				train.setForwardForce(.1);
+			}
+		}
 	}
 
 	/**
@@ -409,6 +429,12 @@ public abstract class TrainStation {
 
 	//TODO Various Getters and Setters for the Train Station class.
 
+	public void addTrain(MinecartGroup train) {
+		this.trains.add(train);
+	}
+	public void removeTrain(MinecartGroup train) {
+		this.trains.remove(train);
+	}
 	/**
 	 * Gets all of the existing train stations.
 	 * 

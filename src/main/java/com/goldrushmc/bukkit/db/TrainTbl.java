@@ -20,6 +20,7 @@ public class TrainTbl {
 	@Id @GeneratedValue private int id;
 	@Column(name = "TRAIN_NAME") @NotEmpty private String name;
 	@Column(name = "WORLD") @NotEmpty private String worldName;
+	@OneToMany(mappedBy = "train") private Set<CartListTbl> carts;
 	@OneToMany(mappedBy = "train") private Set<TrainScheduleTbl> schedule;
 	@OneToOne private TrainStatusTbl status;
 	@ManyToOne private TrainStationTbl station;
