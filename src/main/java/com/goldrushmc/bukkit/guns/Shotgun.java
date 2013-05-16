@@ -64,15 +64,12 @@ public class Shotgun {
 					int randomInt = randomGenerator.nextInt(2);
 					switch(randomInt) {
 					case 0:
-						p.sendMessage(String.valueOf(snowball.getVelocity().getZ()));
 						snowball.setVelocity(snowball.getVelocity().add(new Vector(0, 0, snowball.getVelocity().getZ()/4)));
 						break;
 					case 1:
-						p.sendMessage(String.valueOf(snowball.getVelocity().getX()));
 						snowball.setVelocity(snowball.getVelocity().add(new Vector(snowball.getVelocity().getX()/4, 0, 0)));
 						break;
 					case 2:
-						p.sendMessage(String.valueOf(snowball.getVelocity().getY()));
 						snowball.setVelocity(snowball.getVelocity().add(new Vector(0, snowball.getVelocity().getY()/4, 0)));
 						break;
 					}					

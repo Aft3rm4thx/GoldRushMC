@@ -78,7 +78,7 @@ public class Revolver {
 
 	public void reload() {
 		hasReloadedHash.put(p, false);
-		if (p.getItemInHand().getDurability() > 1 && p.getItemInHand().getDurability() < 32) {
+		if (p.getItemInHand().getDurability() > 1 && p.getItemInHand().getDurability() < 33) {
 			for (int i = 0; i < 36; i++) {
 				if (p.getInventory().getItem(i) != null) {
 					if (p.getInventory().getItem(i).getTypeId() == 332) {
