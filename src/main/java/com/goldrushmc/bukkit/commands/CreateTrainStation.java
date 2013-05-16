@@ -53,39 +53,26 @@ public class CreateTrainStation extends CommandDefault {
 
 		if(!(size == 4)) { sender.sendMessage("You need " + (4 - size) + " more markers"); return true; }
 
-		//Get the list of locations in the right order.
-		//		List<Location> locs = getDirection(WandLis.wandLoc.get(p));
 		List<Location> locs = WandLis.wandLoc.get(p);
-
-		//		//TODO To check if the algorithm is correct. Hasn't worked yet.
-		//		//North-east
-		//		locs.get(0).getBlock().setType(Material.REDSTONE_BLOCK);
-		//		//South-east
-		//		locs.get(1).getBlock().setType(Material.EMERALD_BLOCK);
-		//		//North-west
-		//		locs.get(2).getBlock().setType(Material.DIAMOND_BLOCK);
-		//		//South-west
-		//		locs.get(3).getBlock().setType(Material.IRON_BLOCK);
-
-		//Store the locations in the appropriate map.
 
 		FindCorners fc = new FindCorners(locs.get(0),locs.get(1),locs.get(2),locs.get(3));
 
+		//Store the locations in the appropriate map.
 		Map<CardinalMarker, Location> corners = new HashMap<CardinalMarker, Location>();
 		corners.put(CardinalMarker.NORTH_EAST_CORNER, fc.getNorthEast());
 		corners.put(CardinalMarker.SOUTH_EAST_CORNER, fc.getSouthEast());
 		corners.put(CardinalMarker.NORTH_WEST_CORNER, fc.getNorthWest());
 		corners.put(CardinalMarker.SOUTH_WEST_CORNER, fc.getSouthWest());
 
-		//TODO To check if the algorithm is correct. Hasn't worked yet.
-		//North-east
-		corners.get(CardinalMarker.NORTH_EAST_CORNER).getBlock().setType(Material.GOLD_BLOCK);
-		//South-east
-		corners.get(CardinalMarker.SOUTH_EAST_CORNER).getBlock().setType(Material.EMERALD_BLOCK);
-		//North-west
-		corners.get(CardinalMarker.NORTH_WEST_CORNER).getBlock().setType(Material.DIAMOND_BLOCK);
-		//South-west
-		corners.get(CardinalMarker.NORTH_EAST_CORNER).getBlock().setType(Material.IRON_BLOCK);
+//		//TODO To check if the algorithm is correct. Hasn't worked yet.
+//		//North-east
+//		corners.get(CardinalMarker.NORTH_EAST_CORNER).getBlock().setType(Material.GOLD_BLOCK);
+//		//South-east
+//		corners.get(CardinalMarker.SOUTH_EAST_CORNER).getBlock().setType(Material.EMERALD_BLOCK);
+//		//North-west
+//		corners.get(CardinalMarker.NORTH_WEST_CORNER).getBlock().setType(Material.DIAMOND_BLOCK);
+//		//South-west
+//		corners.get(CardinalMarker.NORTH_EAST_CORNER).getBlock().setType(Material.IRON_BLOCK);
 
 		StationType type = StationType.findType(args[1]);
 		if(type == null) { p.sendMessage("Please use a legitimate station type"); return true;}
@@ -102,9 +89,10 @@ public class CreateTrainStation extends CommandDefault {
 			Bukkit.getLogger().warning(e.getMessage());
 		}
 
-		for(Block b : s.getSurface()) {
-			b.setType(Material.GOLD_BLOCK);
-		}
+		//for a visual representation of the surface.
+//		for(Block b : s.getSurface()) {
+//			b.setType(Material.GOLD_BLOCK);
+//		}
 
 		WandLis.wandLoc.remove(p);
 		p.sendMessage("Markers reset!");
@@ -128,13 +116,13 @@ public class CreateTrainStation extends CommandDefault {
 	//		
 	//	}
 
-
-	/**
+/*
+	
 	 * Determines the correct directions for each of the locations and orders them accordingly.
 	 *
 	 * @param locs
 	 * @return
-	 */
+	 
 	public List<Location> getDirection(List<Location> locs) {
 
 
@@ -342,4 +330,5 @@ public class CreateTrainStation extends CommandDefault {
 		return directions;
 
 	}
+*/
 }
