@@ -29,7 +29,8 @@ public class GunTool extends CommandDefault {
 				if (args[0].equalsIgnoreCase("revolver")){ 
 					ItemStack gunTool= new ItemStack(Material.GOLD_AXE);
 					List<String> lore = new ArrayList<String>();
-					lore.add("Pew Pew");
+					lore.add("5 Round Per Cylinder");
+					lore.add("4 Damage");					
 					ItemMeta meta = gunTool.getItemMeta();
 					meta.setLore(lore);
 					meta.setDisplayName("Colt 1851");
@@ -39,7 +40,17 @@ public class GunTool extends CommandDefault {
 					return true;
 				} else if (args[0].equalsIgnoreCase("shotgun")){ 
 					return true;
-				} else if (args[0].equalsIgnoreCase("rifle")){ 
+				} else if (args[0].equalsIgnoreCase("rifle")){
+					ItemStack gunTool= new ItemStack(Material.GOLD_SPADE);
+					List<String> lore = new ArrayList<String>();
+					lore.add("1 Round per clip");
+					lore.add("8 Damage");
+					ItemMeta meta = gunTool.getItemMeta();
+					meta.setLore(lore);
+					meta.setDisplayName("Sharps Rifle");
+					gunTool.setItemMeta(meta);
+					gunTool.setDurability((short) 1);
+					p.getInventory().addItem(gunTool);
 					return true;
 				} else {
 					return false;

@@ -3,27 +3,34 @@ package com.goldrushmc.bukkit.guns;
 import java.util.HashMap;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Effect;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
-import org.bukkit.event.block.Action;
+import org.bukkit.plugin.Plugin;
 
 public class Revolver {
 	Player p;
+	Plugin plugin;
 
 	public HashMap<Player, Boolean> cockHash = new HashMap<Player, Boolean>();
 	public HashMap<Player, Boolean> hasReloadedHash = new HashMap<Player, Boolean>();
 	public GunTools gunTools = new GunTools();
+	public int fireDelay = 20;
+	public int firedEntity = 0;
+	public int damage = 8;
+	boolean canFire = true;
 
-	public Revolver(Player player) {
+	public Revolver(Player player, Plugin plu) {
 		p = player;
+		plugin = plu;
 	}
 
 	public void fire() {
+		if(canFire)
 		if (p.getItemInHand().getDurability() < 31) {
 			if (cockHash.get(p)) {
 				
@@ -47,9 +54,16 @@ public class Revolver {
 				
 				Snowball snowball = p.launchProjectile(Snowball.class);
 				snowball.setVelocity(p.getLocation().getDirection().multiply(5));
+				snowball.setShooter(p);
+				
+				firedEntity = snowball.getEntityId();
 				
 				p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() + 6));
 				cockHash.put(p, false);
+				
+				FiringDelay fd = new FiringDelay();
+				Bukkit.getServer().getScheduler().runTaskLater(plugin, fd, fireDelay);
+				canFire = false;
 			} else {
 				p.playSound(p.getLocation(), Sound.NOTE_BASS_DRUM,10, -1f);
 			}
@@ -88,4 +102,12 @@ public class Revolver {
 			p.playSound(p.getLocation(), Sound.DOOR_OPEN, 5, 1);
 		}		
 	}		
+	
+	class FiringDelay implements Runnable{
+
+		@Override
+		public void run() {
+			canFire = true;
+		}
+	}
 }
