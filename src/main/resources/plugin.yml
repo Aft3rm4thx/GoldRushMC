@@ -1,70 +1,8 @@
-<<<<<<< HEAD
 name: GoldRushMC
 version: 1.2
 description: The plugin created to facilitate the Gold Rush Server Features
 author: Diremonsoon, lexwebb, 1SmallVille1
 database: false
-#Make sure you have a database ready!!! otherwise errors will fly!
-#website: http://forums.bukkit.org/threads/ GET NEW WEBSITE ADDRESS AND APPEND
-
-main: com.goldrushmc.bukkit.main.Main
-
-commands:
-  fall:
-   description: Test command?
-   aliases: [fall]
-   permission: goldrushmc.collapsetest
-   usage: /<command>
-
-  stationwand:
-   description: Wand which is used for marking the train stations
-   aliases: [stationtool, stool]
-   permission: goldrushmc.station.create
-   usage: /<command>
- 
-  station:
-   description: Tree for station creation.
-   aliases: [station, st]
-   permission: goldrushmc.station.create
-   usage: /<command> [stationType, stationName]
-   
-  Gun:
-   description: Get your gun
-   aliases: [gun]
-   permission: golrushmc.guns
-   usage: /<command>
-   
-  PanningTool:
-   description: Retriever of Gold Panning Pan
-   aliases: [pt]
-   permission: golrushmc.goldpan
-   usage: /<command>
-   
-permissions:
-  goldrushmc.*:
-    description: Gives access to all commands to Gold Rush.
-    children:
-     goldrushmc.station.create: true
-     goldrushmc.guns: true
-     goldrushmc.collapsetest: true
-     golrushmc.goldpan: true
-  goldrushmc.station.create:
-    description: Allows you to spawn the station wand and make stations.
-    default: true
-  goldrushmc.guns:
-   description: Allows access to guns
-   default: true
-  goldrushmc.collapsetest:
-   description: Tests collapse tool
-   default: true
-  golrushmc.goldpan:
-   description: Allows access to Gold Panning
-=======
-name: GoldRushMC
-version: 1.2
-description: The plugin created to facilitate the Gold Rush Server Features
-author: Diremonsoon, lexwebb, 1SmallVille1
-database: true
 #Make sure you have a database ready!!! otherwise errors will fly!
 #website: http://forums.bukkit.org/threads/ GET NEW WEBSITE ADDRESS AND APPEND
 
@@ -130,5 +68,4 @@ permissions:
    default: true
   goldrushmc.station.info:
    description: Allows use of the show visitors command.
->>>>>>> b1f5b0d3071636fe5161d77c238e30defd517276
    default: true

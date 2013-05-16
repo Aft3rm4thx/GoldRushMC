@@ -23,16 +23,30 @@ public class GunTool extends CommandDefault {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		
 		Player p = (Player) sender;
-		ItemStack gunTool= new ItemStack(Material.CARROT_STICK);
-		List<String> lore = new ArrayList<String>();
-		lore.add("Pew Pew");
-		ItemMeta meta = gunTool.getItemMeta();
-		meta.setLore(lore);
-		meta.setDisplayName("Colt");
-		gunTool.setItemMeta(meta);
-		gunTool.setDurability((short) 1);
-		p.getInventory().addItem(gunTool);
-		return true;
-	}
 
+		if(cmd.getName().equalsIgnoreCase("gun")){ // command label
+			if (p instanceof Player){ // instance of player - checks if player
+				if (args[0].equalsIgnoreCase("revolver")){ 
+					ItemStack gunTool= new ItemStack(Material.GOLD_AXE);
+					List<String> lore = new ArrayList<String>();
+					lore.add("Pew Pew");
+					ItemMeta meta = gunTool.getItemMeta();
+					meta.setLore(lore);
+					meta.setDisplayName("Colt 1851");
+					gunTool.setItemMeta(meta);
+					gunTool.setDurability((short) 1);
+					p.getInventory().addItem(gunTool);
+					return true;
+				} else if (args[0].equalsIgnoreCase("shotgun")){ 
+					return true;
+				} else if (args[0].equalsIgnoreCase("rifle")){ 
+					return true;
+				} else {
+					return false;
+				}
+			} else
+			return false;
+		} else
+			return false;		
+	}
 }
