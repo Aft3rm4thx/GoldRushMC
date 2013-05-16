@@ -20,7 +20,7 @@ public interface ISignLogic {
 	 * 
 	 * @return The set of signs, {@code Set<Sign>}.
 	 */
-	public Map<SignType, Sign> getSignTypes();
+	public Map<Sign, SignType> getSignTypes();
 	
 	/**
 	 * Add a {@link Sign} to the permission mapping.
@@ -51,7 +51,22 @@ public interface ISignLogic {
 	 */
 	public Sign getSign(String signName);
 	
+	
+	/**
+	 * Gets a {@link Sign} with the specified {@link SignType}
+	 * 
+	 * @param signName The {@link SignType}.
+	 * @return The {@link Sign}
+	 */
 	public Sign getSign(SignType type);
+	
+	/**
+	 * Gets the type with the specified sign.
+	 * 
+	 * @param type
+	 * @return
+	 */
+	SignType getSignType(Sign sign);
 	/**
 	 * Finds all of the relevant {@link Sign}s to Gold Rush MC, within a given chunk.
 	 * 

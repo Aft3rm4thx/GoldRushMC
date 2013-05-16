@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.EntityType;
@@ -18,9 +18,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
+import com.bergerkiller.bukkit.tc.controller.MinecartMember;
+import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
 import com.goldrushmc.bukkit.defaults.DefaultListener;
-import com.goldrushmc.bukkit.train.TrainFactory;
 import com.goldrushmc.bukkit.train.event.EnterTrainStationEvent;
 import com.goldrushmc.bukkit.train.event.ExitTrainStationEvent;
 import com.goldrushmc.bukkit.train.event.StationSignEvent;
@@ -51,7 +53,6 @@ public class TrainStationLis extends DefaultListener {
 		//We look for the blocks to and from
 		Block from = event.getFrom().getBlock(), to = event.getTo().getBlock();
 
-
 		//Has left the station!
 		if(stationArea.containsKey(from) && !stationArea.containsKey(to)) {
 			String station = stationArea.get(from);
@@ -70,23 +71,32 @@ public class TrainStationLis extends DefaultListener {
 	@EventHandler
 	public void onTrainMove(MemberBlockChangeEvent event) {
 		Block to = event.getTo(), from = event.getFrom();
+		MinecartMember<?> cart = event.getMember();
+		MinecartMemberFurnace furnace = null;
+		if(cart instanceof MinecartMemberFurnace) {
+			furnace = (MinecartMemberFurnace) cart;
+		}
+		
+		//We don't care about non-furnaces. Furnaces lead the charge!
+		if(furnace == null) return;
 
 		if(stationArea.containsKey(to)) {
-			if(!stationArea.containsKey(from)) {
-				//Entering station
-				String station = stationArea.get(to);
-				TrainEnterStationEvent enter = new TrainEnterStationEvent(stationStore.get(station), event.getGroup());
-				Bukkit.getServer().getPluginManager().callEvent(enter);	
+				if(!stationArea.containsKey(from)) {
+					//Entering station
+					String station = stationArea.get(to);
+					TrainEnterStationEvent enter = new TrainEnterStationEvent(stationStore.get(station), event.getGroup());
+					Bukkit.getServer().getPluginManager().callEvent(enter);	
 
-			}
-			//The train has hit the stop block, and needs to stop.
-			else if(to.getRelative(BlockFace.DOWN).equals(stationStore.get(stationArea.get(to)).getStopBlock())) {
-				String station = stationArea.get(to);
-				TrainFullStopEvent stop = new TrainFullStopEvent(stationStore.get(station), event.getGroup());
-				Bukkit.getServer().getPluginManager().callEvent(stop);
+				}
+
+				//The train has hit the stop block, and needs to stop.
+				if(to.equals(stationStore.get(stationArea.get(to)).getStopBlock())) {
+					String station = stationArea.get(to);
+					TrainFullStopEvent stop = new TrainFullStopEvent(stationStore.get(station), event.getGroup());
+					Bukkit.getServer().getPluginManager().callEvent(stop);
 			}
 		}
-			//Leaving station
+		//Leaving station
 		else if(!stationArea.containsKey(to) && stationArea.containsKey(from)) {
 			String station = stationArea.get(from);
 			TrainExitStationEvent exit = new TrainExitStationEvent(stationStore.get(station), event.getGroup());
@@ -104,15 +114,16 @@ public class TrainStationLis extends DefaultListener {
 
 		//We don't care about air blocks!
 		if(event.getClickedBlock() == null) return;
-		
-		BlockState bs = event.getClickedBlock().getState();
+
+		Block b = event.getClickedBlock();
+		BlockState bs = b.getState();
 
 		//Player can only right click to get this event to work. Otherwise we fail silently.
 		if(!event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) return;
 		//We don't care if it isn't a sign.
-		if(!(bs.getType().equals(Material.SIGN) || bs.getType().equals(Material.SIGN) || bs.getType().equals(Material.SIGN))) return;
+		if(!(b.getType().equals(Material.SIGN) || b.getType().equals(Material.SIGN_POST) || b.getType().equals(Material.WALL_SIGN))) return;
 		//Make sure the player has permission to use signs at all.
-		if(event.getPlayer().hasPermission("goldrushmc.station.signs")) return;
+		if(!event.getPlayer().hasPermission("goldrushmc.station.signs")) { event.getPlayer().sendMessage(ChatColor.RED + "You don't have permission to use signs!"); return; }
 		//We don't want the player holding anything in their hand!
 		if(event.getItem() != null) { event.getPlayer().sendMessage("Please put away your things before using signs!"); return; }
 
@@ -120,31 +131,35 @@ public class TrainStationLis extends DefaultListener {
 		Player p = event.getPlayer();
 		Sign sign = (Sign) bs;
 
-		
+
 		//If the player is within a station, we need to throw an event to handle this sign click.
 		if(stationArea.containsKey(p.getLocation().getBlock())) {
 			StationSignEvent sEvent = new StationSignEvent(stationStore.get(stationArea.get(p.getLocation().getBlock())), sign, p);
 			Bukkit.getServer().getPluginManager().callEvent(sEvent);
 		}
 	}
-	
+
+	/**
+	 * Handles the {@link StationSignEvent} for each station.
+	 * 
+	 * @param event
+	 */
 	@EventHandler
 	public void onStationSignUse(StationSignEvent event) {
 		Player player = event.getPlayer();
 		SignType type = event.getSignType();
 		TrainStation station = event.getTrainStation();
-		String trainName = station.getDepartingTrain();
-		
+
 		//Determine which thing to perform.
 		switch(type) {
-		case ADD_STORAGE_CART: TrainFactory.addCart(player, trainName, EntityType.MINECART_CHEST); break;
-		case ADD_RIDE_CART: TrainFactory.addCart(player, trainName, EntityType.MINECART); break;
-		case REMOVE_STORAGE_CART: TrainFactory.removeCart(trainName, player, EntityType.MINECART_CHEST); break;
-		case REMOVE_RIDE_CART: TrainFactory.removeCart(trainName, player, EntityType.MINECART); break;
+		case ADD_STORAGE_CART: station.addCart(EntityType.MINECART_CHEST, player); break;
+		case ADD_RIDE_CART: station.addCart(EntityType.MINECART, player); break;
+		case REMOVE_STORAGE_CART: station.removeCart(EntityType.MINECART_CHEST, player); break;
+		case REMOVE_RIDE_CART: station.removeCart(EntityType.MINECART, player); break;
 		case FIX_BRIDGE: //TODO This will deal with fixing the broken rail pathways. NO logic exists yet for path finding.
 		default: break; //If it is none of these, we do not care right now.
 		}
-		
+
 	}
 
 	@EventHandler
@@ -169,17 +184,34 @@ public class TrainStationLis extends DefaultListener {
 
 	@EventHandler
 	public void onTrainDepart(TrainExitStationEvent event) {
+		Bukkit.broadcastMessage(event.getTrain().getProperties().getTrainName() + " has left the station " + event.getTrainStation().getStationName());
+		event.getTrainStation().removeTrain(event.getTrain());
 	}
-	
+
 	//TODO This may be useless. Depends on how large the station is, and how many directions the station can take.
 	@EventHandler
 	public void onTrainArrive(TrainEnterStationEvent event) {
+		MinecartGroup mg = event.getTrain();
+		Bukkit.broadcastMessage(mg.getProperties().getTrainName() + " has entered the station " + event.getTrainStation().getStationName());
+		for(MinecartMember<?> mm : mg) {
+			if(mm instanceof MinecartMemberFurnace) {
+				MinecartMemberFurnace power = (MinecartMemberFurnace) mm;
+				while(power.isMoving()) {
+					power.stop(true);
+				}
+			}
+		}
 	}
-	
+
 	@EventHandler
 	public void onTrainNextToDepart(TrainFullStopEvent event) {
-		event.getTrain().stop(true);
+		MinecartGroup train = event.getTrain();
+		train.stop(true);
+		while(train.isMoving()) {
+			train.stop();
+		}
 		event.getTrainStation().changeSignLogic(event.getTrain().getProperties().getTrainName());
+		event.getTrainStation().setDepartingTrain(train);
 	}
 
 	public void populate() {

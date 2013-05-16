@@ -50,6 +50,12 @@ commands:
    aliases: [traincycle, cycle]
    permission: goldrushmc.station.cycle
    usage: /<command> [start or stop]
+  
+  removetrainstation:
+   description: Starts and stops the train scheduled runs.
+   aliases: [rmstation, removestation, dstat, rstat]
+   permission: goldrushmc.station.destroy
+   usage: /<command> [stationName]
 
 permissions:
   goldrushmc.*:
@@ -61,8 +67,12 @@ permissions:
      golrushmc.goldpan: true
      goldrushmc.station.info: true
      goldrushmc.station.cycle: true
+     goldrushmc.station.destroy: true
   goldrushmc.station.create:
     description: Allows you to spawn the station wand and make stations.
+    default: true
+  goldrushmc.station.destroy:
+    description: Allows you to delete stations from the station list.
     default: true
   goldrushmc.guns:
    description: Allows access to guns

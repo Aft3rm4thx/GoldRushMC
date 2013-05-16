@@ -67,4 +67,16 @@ public class TrainTbl {
 	public void setStation(TrainStationTbl station) {
 		this.station = station;
 	}
+	/**
+	 * @return the carts
+	 */
+	public Set<CartListTbl> getCarts() {
+		return carts;
+	}
+	/**
+	 * @param carts the carts to set
+	 */
+	public void setCarts(Set<CartListTbl> carts) {
+		this.carts = carts;
+	}
 }

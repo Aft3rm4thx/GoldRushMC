@@ -4,6 +4,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 
+import com.goldrushmc.bukkit.train.signs.ISignLogic;
 import com.goldrushmc.bukkit.train.signs.SignType;
 import com.goldrushmc.bukkit.train.station.TrainStation;
 
@@ -34,12 +35,10 @@ public class StationSignEvent extends TrainStationEvent {
 	 * @return The {@link SignType}, if any. Will return null if there is none.
 	 */
 	public SignType getSignType() {
-		if(station.getSigns().getSign(SignType.ADD_STORAGE_CART).equals(sign)) return SignType.ADD_STORAGE_CART;
-		else if(station.getSigns().getSign(SignType.ADD_RIDE_CART).equals(sign)) return SignType.ADD_RIDE_CART;
-		else if(station.getSigns().getSign(SignType.REMOVE_STORAGE_CART).equals(sign)) return SignType.REMOVE_STORAGE_CART;
-		else if(station.getSigns().getSign(SignType.REMOVE_RIDE_CART).equals(sign)) return SignType.REMOVE_RIDE_CART;
-		else if(station.getSigns().getSign(SignType.FIX_BRIDGE).equals(sign)) return SignType.FIX_BRIDGE;
-		else return null;
+		ISignLogic signList = station.getSigns();
+		SignType type = signList.getSignType(sign);
+		if(type == null) return SignType.TRAIN_STATION;
+		return type;
 	}
 	
 	public Player getPlayer() {

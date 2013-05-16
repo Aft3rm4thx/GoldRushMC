@@ -10,6 +10,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.goldrushmc.bukkit.bank.InventoryLis;
 import com.goldrushmc.bukkit.commands.CreateTrainStation;
+import com.goldrushmc.bukkit.commands.RemoveTrainStation;
 import com.goldrushmc.bukkit.commands.ShowVisitorsCommand;
 import com.goldrushmc.bukkit.commands.StationWand;
 import com.goldrushmc.bukkit.commands.TrainCycleCommand;
@@ -60,6 +61,7 @@ public final class Main extends JavaPlugin{
 		getCommand("PanningTool").setExecutor(new PanningTool(this));
 		getCommand("ShowVisitors").setExecutor(new ShowVisitorsCommand(this));
 		getCommand("TrainCycle").setExecutor(new TrainCycleCommand(this));
+		getCommand("RemoveStation").setExecutor(new RemoveTrainStation(this));
 		
 		
 		//Register listeners

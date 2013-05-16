@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -13,12 +14,17 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
+import com.bergerkiller.bukkit.tc.controller.MinecartMember;
+import com.bergerkiller.bukkit.tc.controller.MinecartMemberStore;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
+import com.bergerkiller.bukkit.tc.events.GroupCreateEvent;
+import com.bergerkiller.bukkit.tc.properties.CartProperties;
 import com.goldrushmc.bukkit.db.TrainScheduleTbl;
 import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
 import com.goldrushmc.bukkit.db.TrainStationTbl;
@@ -26,6 +32,7 @@ import com.goldrushmc.bukkit.db.TrainTbl;
 import com.goldrushmc.bukkit.defaults.DBAccess;
 import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
 import com.goldrushmc.bukkit.train.CardinalMarker;
+import com.goldrushmc.bukkit.train.SmallBlockMap;
 import com.goldrushmc.bukkit.train.listeners.TrainStationLis;
 import com.goldrushmc.bukkit.train.signs.ISignLogic;
 import com.goldrushmc.bukkit.train.signs.SignLogic;
@@ -46,7 +53,7 @@ public abstract class TrainStation {
 	public static DBTrainsAccessible db;
 
 	protected String stationName;
-	protected volatile String departingTrain;
+	protected volatile MinecartGroup departingTrain;
 	protected final ISignLogic signs;
 	protected final BlockFace direction;
 	protected volatile List<Player> visitors = new ArrayList<Player>();
@@ -349,6 +356,63 @@ public abstract class TrainStation {
 			}
 		}
 	}
+	
+	/**
+	 * Adds a cart to the train scheduled for departure
+	 * 
+	 * @param type
+	 * @param owner
+	 */
+	public void addCart(EntityType type, Player owner) {
+		String trainName = this.departingTrain.getProperties().getTrainName();
+		if(this.departingTrain == null) { owner.sendMessage("There are currently no trains to buy carts for."); return; }
+		int trainSize = this.departingTrain.size();
+		Block toSpawn = null;
+		BlockFace dirToLook = this.direction.getOppositeFace();
+		SmallBlockMap sbm = new SmallBlockMap(this.departingTrain.get(this.departingTrain.size() - 1).getBlock());
+		for(int i = 0; i <= trainSize; i++) {
+			sbm = new SmallBlockMap(sbm.getBlockAt(dirToLook));
+			if(!sbm.nextIsRail(dirToLook)) {
+				if(i < trainSize) {owner.sendMessage("There is no room in the station to buy a cart!"); return; }
+			}
+			if(i == trainSize) toSpawn = sbm.getBlockAt(dirToLook);
+		}
+		
+		//If there is no room, do not spawn additional carts.
+		if(toSpawn == null) { owner.sendMessage("There is not enough room to spawn additonal carts."); return; }
+		
+		//Spawn the cart and join it to the train.
+		MinecartMember<?> toJoin = MinecartMemberStore.spawn(toSpawn.getLocation(), type);
+		toJoin.getProperties().setOwner(owner.getName().toLowerCase());
+		this.departingTrain.add(toJoin);
+		this.departingTrain.getProperties().setName(trainName);
+		GroupCreateEvent.call(this.departingTrain);
+		
+		//Send a message saying it has been done.
+		if(type.equals(EntityType.MINECART)) owner.sendMessage("You bought a passenger cart");
+		else if(type.equals(EntityType.MINECART_CHEST)) owner.sendMessage("You bought a storage cart");
+	}
+	
+	
+	/**
+	 * Removes a cart from the departing train.
+	 * 
+	 * @param type
+	 * @param remover
+	 */
+	public void removeCart(EntityType type, Player remover) {
+		if(this.departingTrain == null) { remover.sendMessage("There is no train in the station."); return; }
+		MinecartGroup train = this.departingTrain;
+		for(MinecartMember<?> cart : train) {
+			CartProperties cartP = cart.getProperties();
+			if(cartP.getOwners().contains(remover.getName().toLowerCase())) {
+				train.removeSilent(cart); 
+				cart.getGroup().destroy();
+				return;
+			}
+		}
+		remover.sendMessage("You have no train carts to remove.");
+	}
 
 	/**
 	 * Finds the next train queued for departure. Its front cart (furnace cart) will be just above the stop block.
@@ -357,30 +421,47 @@ public abstract class TrainStation {
 	 */
 	public MinecartGroup findNextDeparture() {
 		for(MinecartGroup mg : this.trains) {
-			if(mg.get(0).getGroundBlock().equals(this.stopBlock)) {
-				//Mark the next train name.
-				this.departingTrain = mg.getProperties().getTrainName();
-				return mg;
+			Bukkit.getLogger().info("Train found for next departure: " + mg.getProperties().getTrainName());
+			for(MinecartMember<?> mm : mg) {
+				if(mm instanceof MinecartMemberFurnace) {
+					if(mm.getBlock().equals(this.stopBlock)) {
+						Bukkit.getLogger().info("Found the correct cart!");
+						//Mark the next train name.
+						return mg;
+					}
+				}
 			}
 		}
 		return null;
 	}
 	
-	public String getDepartingTrain() {
+	public MinecartGroup getDepartingTrain() {
 		return departingTrain;
 	}
+	
+	public void setDepartingTrain(MinecartGroup train) {
+		this.departingTrain = train;
+	}
 
-	public void pushQueue() {
+	public boolean pushQueue() {
 		MinecartGroup mg = findNextDeparture();
-		mg.setForwardForce(0.4);
-		if(mg.get(0) instanceof MinecartMemberFurnace) {
-			((MinecartMemberFurnace) mg.get(0)).getCoalFromNeighbours();
-		}
-		for(MinecartGroup train : this.trains) {
-			if(!train.equals(mg)) {
-				train.setForwardForce(.1);
+		if(mg == null) return false;
+		for(MinecartMember<?> mm : mg) {
+			if(mm instanceof MinecartMemberFurnace) {
+				MinecartMemberFurnace power = (MinecartMemberFurnace) mm;
+				power.addFuelTicks(10);
+				if(!power.getDirection().equals(this.direction)) {
+					mg.reverse();
+				}
 			}
 		}
+		if(this.trains.isEmpty()) return true;
+		for(MinecartGroup train : this.trains) {
+			if(!train.equals(mg)) {
+				train.setForwardForce(.4);
+			}
+		}
+		return true;
 	}
 
 	/**
