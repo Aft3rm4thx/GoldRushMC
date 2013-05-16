@@ -46,6 +46,9 @@ public class GunLis extends DefaultListener {
 						if(!revolverHash.containsKey(p)){
 							Revolver revolver = new Revolver(p, this.plugin);
 							revolverHash.put(p, revolver);
+							
+							revolverHash.get(p).fire();
+							firedEntityHash.put(revolverHash.get(p).firedEntity, revolverHash.get(p).damage);
 						} else {
 							revolverHash.get(p).fire();
 							firedEntityHash.put(revolverHash.get(p).firedEntity, revolverHash.get(p).damage);
@@ -61,6 +64,9 @@ public class GunLis extends DefaultListener {
 						if(!rifleHash.containsKey(p)){
 							Rifle rifle = new Rifle(p, this.plugin);
 							rifleHash.put(p, rifle);
+							
+							rifleHash.get(p).fire();
+							firedEntityHash.put(rifleHash.get(p).firedEntity, rifleHash.get(p).damage);
 						} else {
 							rifleHash.get(p).fire();
 							firedEntityHash.put(rifleHash.get(p).firedEntity, rifleHash.get(p).damage);
@@ -69,6 +75,27 @@ public class GunLis extends DefaultListener {
 				}
 			}
 			
+			//Shotgun
+			if (p.getItemInHand().getType().equals(Material.GOLD_HOE)) {
+				if (p.getItemInHand().getItemMeta().hasDisplayName()) {
+					if (p.getItemInHand().getItemMeta().getDisplayName().equals("Coach Gun")) {
+						if(!shotgunHash.containsKey(p)){
+							Shotgun shotgun = new Shotgun(p, this.plugin);
+							shotgunHash.put(p, shotgun);
+							
+							shotgunHash.get(p).fire();
+							for(int i = 0; i < shotgunHash.get(p).firedEntity.size(); i++){
+								firedEntityHash.put(shotgunHash.get(p).firedEntity.get(i), shotgunHash.get(p).damage);
+							}
+						} else {
+							shotgunHash.get(p).fire();
+							for(int i = 0; i < shotgunHash.get(p).firedEntity.size(); i++){
+								firedEntityHash.put(shotgunHash.get(p).firedEntity.get(i), shotgunHash.get(p).damage);
+							}
+						}
+					}
+				}
+			}
 		}		
 	}
 	
@@ -85,6 +112,7 @@ public class GunLis extends DefaultListener {
 							if(!revolverHash.containsKey(p)){
 								Revolver revolver = new Revolver(p, this.plugin);
 								revolverHash.put(p, revolver);
+								revolverHash.get(p).reload();
 							} else {
 								revolverHash.get(p).reload();
 							}
@@ -99,8 +127,24 @@ public class GunLis extends DefaultListener {
 							if(!rifleHash.containsKey(p)){
 								Rifle rifle = new Rifle(p, this.plugin);
 								rifleHash.put(p, rifle);
+								rifleHash.get(p).reload();
 							} else {
 								rifleHash.get(p).reload();
+							}
+						}
+					}
+				}
+				
+				//Shotgun
+				if (p.getItemInHand().getType().equals(Material.GOLD_HOE)) {
+					if (p.getItemInHand().getItemMeta().hasDisplayName()) {
+						if (p.getItemInHand().getItemMeta().getDisplayName().equals("Coach Gun")) {
+							if(!shotgunHash.containsKey(p)){
+								Shotgun shotgun = new Shotgun(p, this.plugin);
+								shotgunHash.put(p, shotgun);
+								shotgunHash.get(p).reload();
+							} else {
+								shotgunHash.get(p).reload();								
 							}
 						}
 					}
@@ -114,6 +158,7 @@ public class GunLis extends DefaultListener {
 							if(!revolverHash.containsKey(p)){
 								Revolver revolver = new Revolver(p, this.plugin);
 								revolverHash.put(p, revolver);
+								revolverHash.get(p).cock();
 							} else {
 								revolverHash.get(p).cock();
 							}
@@ -128,8 +173,24 @@ public class GunLis extends DefaultListener {
 							if(!rifleHash.containsKey(p)){
 								Rifle rifle = new Rifle(p, this.plugin);
 								rifleHash.put(p, rifle);
+								rifleHash.get(p).cock();
 							} else {
 								rifleHash.get(p).cock();
+							}
+						}
+					}
+				}
+				
+				//Shotgun
+				if (p.getItemInHand().getType().equals(Material.GOLD_HOE)) {
+					if (p.getItemInHand().getItemMeta().hasDisplayName()) {
+						if (p.getItemInHand().getItemMeta().getDisplayName().equals("Coach Gun")) {
+							if(!shotgunHash.containsKey(p)){
+								Shotgun shotgun = new Shotgun(p, this.plugin);
+								shotgunHash.put(p, shotgun);
+								shotgunHash.get(p).cock();
+							} else {
+								shotgunHash.get(p).cock();								
 							}
 						}
 					}
@@ -153,7 +214,7 @@ public class GunLis extends DefaultListener {
 	public void onDamage(EntityDamageByEntityEvent e) {
 		if(e.getDamager().getType().equals(EntityType.SNOWBALL)) {
 			int damager = e.getDamager().getEntityId();
-			e.setDamage(firedEntityHash.get(damager));
+				e.setDamage(firedEntityHash.get(damager));
 		}
 	}
 }

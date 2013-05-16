@@ -29,7 +29,7 @@ public class GunTool extends CommandDefault {
 				if (args[0].equalsIgnoreCase("revolver")){ 
 					ItemStack gunTool= new ItemStack(Material.GOLD_AXE);
 					List<String> lore = new ArrayList<String>();
-					lore.add("5 Round Per Cylinder");
+					lore.add("5 Rounds Per Cylinder");
 					lore.add("4 Damage");					
 					ItemMeta meta = gunTool.getItemMeta();
 					meta.setLore(lore);
@@ -39,6 +39,17 @@ public class GunTool extends CommandDefault {
 					p.getInventory().addItem(gunTool);
 					return true;
 				} else if (args[0].equalsIgnoreCase("shotgun")){ 
+					ItemStack gunTool= new ItemStack(Material.GOLD_HOE);
+					List<String> lore = new ArrayList<String>();
+					lore.add("2 Rounds per clip");
+					lore.add("Fires two shells");
+					lore.add("6 x 1 Damage");
+					ItemMeta meta = gunTool.getItemMeta();
+					meta.setLore(lore);
+					meta.setDisplayName("Coach Gun");
+					gunTool.setItemMeta(meta);
+					gunTool.setDurability((short) 1);
+					p.getInventory().addItem(gunTool);
 					return true;
 				} else if (args[0].equalsIgnoreCase("rifle")){
 					ItemStack gunTool= new ItemStack(Material.GOLD_SPADE);

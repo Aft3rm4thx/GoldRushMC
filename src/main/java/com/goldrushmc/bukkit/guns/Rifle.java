@@ -12,6 +12,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.plugin.Plugin;
 
+import com.goldrushmc.bukkit.guns.Shotgun.DestroyAfter;
+
 public class Rifle {
 	Player p;
 	Plugin plugin;
@@ -57,6 +59,8 @@ public class Rifle {
 				snowball.setShooter(p);
 				
 				firedEntity = snowball.getEntityId();
+				
+				Bukkit.getServer().getScheduler().runTaskLater(plugin, new DestroyAfter(snowball), 40);
 				
 				p.getItemInHand().setDurability((short) (p.getItemInHand().getDurability() + 30));
 				cockHash.put(p, false);
@@ -108,6 +112,18 @@ public class Rifle {
 		@Override
 		public void run() {
 			canFire = true;
+		}
+	}
+	
+	class DestroyAfter implements Runnable{
+		Snowball snowball;
+		public DestroyAfter(Snowball sn) {
+			snowball = sn;
+		}
+		
+		@Override
+		public void run() {
+			snowball.remove();
 		}
 	}
 }
