@@ -16,6 +16,7 @@ import com.goldrushmc.bukkit.train.CardinalMarker;
 import com.goldrushmc.bukkit.train.FindCorners;
 import com.goldrushmc.bukkit.train.listeners.WandLis;
 import com.goldrushmc.bukkit.train.station.StationType;
+import com.goldrushmc.bukkit.train.station.StopBlockMismatchException;
 import com.goldrushmc.bukkit.train.station.TooLowException;
 import com.goldrushmc.bukkit.train.station.TrainStationTransport;
 
@@ -69,7 +70,7 @@ public class CreateTrainStation extends CommandDefault {
 			case PASSENGER_TRANS:
 			case STORAGE_TRANS: new TrainStationTransport(plugin, args[1], corners, p.getWorld()); break;
 			}
-		}catch (TooLowException e) {
+		}catch (TooLowException | StopBlockMismatchException e) {
 			Bukkit.getLogger().warning(e.getMessage());
 		}
 

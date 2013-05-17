@@ -31,6 +31,7 @@ import com.goldrushmc.bukkit.train.event.TrainExitStationEvent;
 import com.goldrushmc.bukkit.train.event.TrainFullStopEvent;
 import com.goldrushmc.bukkit.train.signs.SignType;
 import com.goldrushmc.bukkit.train.station.TrainStation;
+import com.goldrushmc.bukkit.train.station.TrainStationTransport;
 
 /**
  * Currently, all this class really does is adds and removes {@link Player}s from the {@link TrainStation#visitors} list.
@@ -43,6 +44,7 @@ public class TrainStationLis extends DefaultListener {
 	//Both Maps only exist for quick referential access. Otherwise, we would have to iterate through train stations each time.
 	private static Map<Block, String> stationArea = new HashMap<Block, String>();
 	private static Map<String, TrainStation> stationStore = new HashMap<String, TrainStation>();
+	private static Map<MinecartGroup, Boolean> hasStopped = new HashMap<MinecartGroup, Boolean>();
 
 	public TrainStationLis(JavaPlugin plugin) {
 		super(plugin);
@@ -71,6 +73,7 @@ public class TrainStationLis extends DefaultListener {
 	@EventHandler
 	public void onTrainMove(MemberBlockChangeEvent event) {
 		Block to = event.getTo(), from = event.getFrom();
+		MinecartGroup mg = event.getGroup();
 		MinecartMember<?> cart = event.getMember();
 		MinecartMemberFurnace furnace = null;
 		if(cart instanceof MinecartMemberFurnace) {
@@ -86,12 +89,13 @@ public class TrainStationLis extends DefaultListener {
 					String station = stationArea.get(to);
 					TrainEnterStationEvent enter = new TrainEnterStationEvent(stationStore.get(station), event.getGroup());
 					Bukkit.getServer().getPluginManager().callEvent(enter);	
-
 				}
 
 				//The train has hit the stop block, and needs to stop.
-				if(to.equals(stationStore.get(stationArea.get(to)).getStopBlock())) {
+				else if(stationStore.get(stationArea.get(to)).getStopBlock().contains(to)) {
 					String station = stationArea.get(to);
+					//Check to see if the train has been stopped. if so, don't call the event.
+					if(hasStopped.containsKey(mg)) if(hasStopped.get(mg)) return;
 					TrainFullStopEvent stop = new TrainFullStopEvent(stationStore.get(station), event.getGroup());
 					Bukkit.getServer().getPluginManager().callEvent(stop);
 			}
@@ -184,39 +188,49 @@ public class TrainStationLis extends DefaultListener {
 
 	@EventHandler
 	public void onTrainDepart(TrainExitStationEvent event) {
-		Bukkit.broadcastMessage(event.getTrain().getProperties().getTrainName() + " has left the station " + event.getTrainStation().getStationName());
+//		Bukkit.broadcastMessage(event.getTrain().getProperties().getTrainName() + " has left the station " + event.getTrainStation().getStationName());
 		event.getTrainStation().removeTrain(event.getTrain());
+		hasStopped.put(event.getTrain(), false);
 	}
 
 	//TODO This may be useless. Depends on how large the station is, and how many directions the station can take.
 	@EventHandler
 	public void onTrainArrive(TrainEnterStationEvent event) {
 		MinecartGroup mg = event.getTrain();
-		Bukkit.broadcastMessage(mg.getProperties().getTrainName() + " has entered the station " + event.getTrainStation().getStationName());
-		for(MinecartMember<?> mm : mg) {
-			if(mm instanceof MinecartMemberFurnace) {
-				MinecartMemberFurnace power = (MinecartMemberFurnace) mm;
-				while(power.isMoving()) {
-					power.stop(true);
-				}
-			}
-		}
+		event.getTrainStation().addTrain(mg);
+//		Bukkit.broadcastMessage(mg.getProperties().getTrainName() + " has entered the station " + event.getTrainStation().getStationName());
+		mg.getProperties().setSpeedLimit(0.2);
+		hasStopped.put(event.getTrain(), false);
+		
 	}
 
 	@EventHandler
 	public void onTrainNextToDepart(TrainFullStopEvent event) {
+		TrainStation station = event.getTrainStation();
 		MinecartGroup train = event.getTrain();
-		train.stop(true);
-		while(train.isMoving()) {
-			train.stop();
+		Block toStop = null;
+		//TODO Starting to get a little non-polymorphic. Need to rework stopblocks, or just make many different TrainFullStopEvents.
+		if(station instanceof TrainStationTransport) {
+			toStop = ((TrainStationTransport) station).getMainStopBlock();
+		}
+		for(MinecartMember<?> mm : train) {
+			if(mm instanceof MinecartMemberFurnace) {
+				if(mm.getBlock().equals(toStop)) {
+					train.getProperties().setSpeedLimit(0);
+					hasStopped.put(train, true);
+				}
+				else {
+					train.getProperties().setSpeedLimit(0.1);
+				}
+			}
 		}
 		event.getTrainStation().changeSignLogic(event.getTrain().getProperties().getTrainName());
 		event.getTrainStation().setDepartingTrain(train);
 	}
 
 	public void populate() {
-		if(!TrainStation.trainStations.isEmpty()) {
-			for(TrainStation station : TrainStation.trainStations) {
+		if(!TrainStation.getTrainStations().isEmpty()) {
+			for(TrainStation station : TrainStation.getTrainStations()) {
 				stationStore.put(station.getStationName(), station);
 				for(Block b : station.getArea()) {
 					stationArea.put(b, station.getStationName());

@@ -74,12 +74,12 @@ public final class Main extends JavaPlugin{
 		pm.registerEvents(il, this);
 		
 		//Add settings
-		SettingsManager settings = SettingsManager.getInstance();
-		settings.setup(this);
+//		SettingsManager settings = SettingsManager.getInstance();
+//		settings.setup(this);
 		
 		//Populate the train station listener maps
 		//This only works if the database has data to make train stations with....
-		tsl.populate();
+//		tsl.populate();
 		
 		getLogger().info(getDescription().getName() + " " + getDescription().getVersion() + " Enabled!");		
 	}
@@ -104,23 +104,23 @@ public final class Main extends JavaPlugin{
 		}
 	}
 	
-	@Override
-	public List<Class<?>> getDatabaseClasses() {
-		List<Class<?>> list = new ArrayList<Class<?>>();
-		list.add(TrainTbl.class);
-		list.add(TrainScheduleTbl.class);
-		list.add(TrainStatusTbl.class);
-		list.add(TrainStationTbl.class);
-		list.add(TrainStationLocationTbl.class);
-		list.add(PlayerTbl.class);
-		list.add(TownTbl.class);
-		list.add(BankTbl.class);
-		list.add(JobTbl.class);
-		list.add(CartListTbl.class);
-		list.add(ItemForeignKeyTbl.class);
-		list.add(ItemTbl.class);
-		return list;
-	}
+//	@Override
+//	public List<Class<?>> getDatabaseClasses() {
+//		List<Class<?>> list = new ArrayList<Class<?>>();
+//		list.add(TrainTbl.class);
+//		list.add(TrainScheduleTbl.class);
+//		list.add(TrainStatusTbl.class);
+//		list.add(TrainStationTbl.class);
+//		list.add(TrainStationLocationTbl.class);
+//		list.add(PlayerTbl.class);
+//		list.add(TownTbl.class);
+//		list.add(BankTbl.class);
+//		list.add(JobTbl.class);
+//		list.add(CartListTbl.class);
+//		list.add(ItemForeignKeyTbl.class);
+//		list.add(ItemTbl.class);
+//		return list;
+//	}
 	
 	@Override
 	public void onDisable() {

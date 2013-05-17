@@ -17,17 +17,17 @@ public class RemoveTrainStation extends CommandDefault {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		
-		int starting = TrainStation.trainStations.size();
+		int starting = TrainStation.getTrainStations().size();
 		
-		for(TrainStation station : TrainStation.trainStations) {
+		for(TrainStation station : TrainStation.getTrainStations()) {
 			if(station.getStationName().equalsIgnoreCase(args[0])) {
-				TrainStation.trainStations.remove(station);
+				TrainStation.getTrainStations().remove(station);
 				TrainStationLis.removeStation(station);
 				break;
 			}
 		}
 		
-		if(TrainStation.trainStations.size() < starting) { sender.sendMessage("Train station removed successfully!"); return true; }
+		if(TrainStation.getTrainStations().size() < starting) { sender.sendMessage("Train station removed successfully!"); return true; }
 		
 		return false;
 	}

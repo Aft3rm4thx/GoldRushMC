@@ -48,7 +48,7 @@ import com.goldrushmc.bukkit.train.util.TrainTools;
 public abstract class TrainStation {
 
 	//For tracking of the stations.
-	public static List<TrainStation> trainStations = new ArrayList<TrainStation>();
+	protected static List<TrainStation> trainStations = new ArrayList<TrainStation>();
 	public static final Material defaultStop = Material.BEDROCK;
 	public static DBTrainsAccessible db;
 
@@ -66,7 +66,7 @@ public abstract class TrainStation {
 	protected final World world;
 	protected volatile List<MinecartGroup> trains;
 	protected final List<Block> rails;
-	protected final Block stopBlock;
+	protected final List<Block> stopBlocks;
 
 	/**
 	 * We require the JavaPlugin because this class must be able to access the database.
@@ -93,7 +93,7 @@ public abstract class TrainStation {
 		this.area = getFullArea(this.surfaceBlocks);
 		this.trainArea = getTrainArea(this.surfaceBlocks);
 		this.rails = findRails();
-		this.stopBlock = this.findStopBlock(defaultStop);
+		this.stopBlocks = this.findStopBlocks(defaultStop);
 		this.signs = generateSignLogic();
 		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
 		BlockFace tempDir = null;
@@ -138,7 +138,7 @@ public abstract class TrainStation {
 		this.area = getFullArea(this.surfaceBlocks);
 		this.trainArea = getTrainArea(this.surfaceBlocks);
 		this.rails = findRails();
-		this.stopBlock = this.findStopBlock(stopMat);
+		this.stopBlocks = this.findStopBlocks(stopMat);
 		this.signs = generateSignLogic();
 		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
 		BlockFace tempDir = null;
@@ -157,6 +157,8 @@ public abstract class TrainStation {
 		trainStations.add(this);
 		TrainStationLis.addStation(this);
 	}
+	
+	public abstract void createTransport();
 
 	/**
 	 * Adds the train station to the database, in case of a server wide crash.
@@ -419,21 +421,7 @@ public abstract class TrainStation {
 	 * 
 	 * @return
 	 */
-	public MinecartGroup findNextDeparture() {
-		for(MinecartGroup mg : this.trains) {
-			Bukkit.getLogger().info("Train found for next departure: " + mg.getProperties().getTrainName());
-			for(MinecartMember<?> mm : mg) {
-				if(mm instanceof MinecartMemberFurnace) {
-					if(mm.getBlock().equals(this.stopBlock)) {
-						Bukkit.getLogger().info("Found the correct cart!");
-						//Mark the next train name.
-						return mg;
-					}
-				}
-			}
-		}
-		return null;
-	}
+	public abstract MinecartGroup findNextDeparture();
 	
 	public MinecartGroup getDepartingTrain() {
 		return departingTrain;
@@ -443,35 +431,13 @@ public abstract class TrainStation {
 		this.departingTrain = train;
 	}
 
-	public boolean pushQueue() {
-		MinecartGroup mg = findNextDeparture();
-		if(mg == null) return false;
-		for(MinecartMember<?> mm : mg) {
-			if(mm instanceof MinecartMemberFurnace) {
-				MinecartMemberFurnace power = (MinecartMemberFurnace) mm;
-				power.addFuelTicks(10);
-				if(!power.getDirection().equals(this.direction)) {
-					mg.reverse();
-				}
-			}
-		}
-		if(this.trains.isEmpty()) return true;
-		for(MinecartGroup train : this.trains) {
-			if(!train.equals(mg)) {
-				train.setForwardForce(.4);
-			}
-		}
-		return true;
-	}
-
+	public abstract boolean pushQueue();
 	/**
 	 * Changes the signs to reflect the buying and selling of carts for the specified train.
 	 * 
 	 * @param trainName
 	 */
-	public void changeSignLogic(String trainName) {
-		this.signs.updateTrain(trainName);
-	}
+	public abstract void changeSignLogic(String trainName);
 
 	/**
 	 * Gets the block that trains will stop on, specified by a specific material.
@@ -480,21 +446,16 @@ public abstract class TrainStation {
 	 * @param m
 	 * @return
 	 */
-	public Block findStopBlock(Material m) {
-		for(Block b : this.trainArea) {
-			if(b.getType().equals(m)) {
-				return b.getRelative(BlockFace.UP);
-			}
-		}
-		return null;
-	}
+	public abstract List<Block> findStopBlocks(Material m);
 
-	public Block getStopBlock() {
-		return stopBlock;
+	public List<Block> getStopBlock() {
+		return stopBlocks;
 	}
 
 	/**
 	 * This finds the rails which are within the train station.
+	 * <p>
+	 * This DOES NOT SHOW PATHWAYS. That is to be determined for each subclass.
 	 * 
 	 * @return
 	 */

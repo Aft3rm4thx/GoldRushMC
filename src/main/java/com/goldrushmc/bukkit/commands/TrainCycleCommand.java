@@ -20,7 +20,7 @@ public class TrainCycleCommand extends CommandDefault {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		
 		if(args[0].equalsIgnoreCase("Start")) {
-			taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Departure(plugin), 100, 6000);
+			taskID = Bukkit.getScheduler().scheduleSyncRepeatingTask(plugin, new Departure(plugin), 100, 400);
 		}
 		else if(args[0].equalsIgnoreCase("Stop")) {
 			Bukkit.getScheduler().cancelTask(taskID);
