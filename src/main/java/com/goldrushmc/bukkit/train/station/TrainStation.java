@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -13,11 +14,17 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.Sign;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
+import com.bergerkiller.bukkit.tc.controller.MinecartMember;
+import com.bergerkiller.bukkit.tc.controller.MinecartMemberStore;
+import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
+import com.bergerkiller.bukkit.tc.events.GroupCreateEvent;
+import com.bergerkiller.bukkit.tc.properties.CartProperties;
 import com.goldrushmc.bukkit.db.TrainScheduleTbl;
 import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
 import com.goldrushmc.bukkit.db.TrainStationTbl;
@@ -25,6 +32,7 @@ import com.goldrushmc.bukkit.db.TrainTbl;
 import com.goldrushmc.bukkit.defaults.DBAccess;
 import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
 import com.goldrushmc.bukkit.train.CardinalMarker;
+import com.goldrushmc.bukkit.train.SmallBlockMap;
 import com.goldrushmc.bukkit.train.listeners.TrainStationLis;
 import com.goldrushmc.bukkit.train.signs.ISignLogic;
 import com.goldrushmc.bukkit.train.signs.SignLogic;
@@ -40,12 +48,12 @@ import com.goldrushmc.bukkit.train.util.TrainTools;
 public abstract class TrainStation {
 
 	//For tracking of the stations.
-	public static List<TrainStation> trainStations = new ArrayList<TrainStation>();
+	protected static List<TrainStation> trainStations = new ArrayList<TrainStation>();
 	public static final Material defaultStop = Material.BEDROCK;
 	public static DBTrainsAccessible db;
 
 	protected String stationName;
-	protected transient String departingTrain;
+	protected volatile MinecartGroup departingTrain;
 	protected final ISignLogic signs;
 	protected final BlockFace direction;
 	protected volatile List<Player> visitors = new ArrayList<Player>();
@@ -58,7 +66,7 @@ public abstract class TrainStation {
 	protected final World world;
 	protected volatile List<MinecartGroup> trains;
 	protected final List<Block> rails;
-	protected final Block stopBlock;
+	protected final List<Block> stopBlocks;
 
 	/**
 	 * We require the JavaPlugin because this class must be able to access the database.
@@ -85,7 +93,7 @@ public abstract class TrainStation {
 		this.area = getFullArea(this.surfaceBlocks);
 		this.trainArea = getTrainArea(this.surfaceBlocks);
 		this.rails = findRails();
-		this.stopBlock = this.findStopBlock(defaultStop);
+		this.stopBlocks = this.findStopBlocks(defaultStop);
 		this.signs = generateSignLogic();
 		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
 		BlockFace tempDir = null;
@@ -99,12 +107,62 @@ public abstract class TrainStation {
 			this.direction = BlockFace.SELF;
 		}
 		findWorkers();
-		findPlayers();
-		//Add to the list of stations! IMPORTANT
+		//Add to the list of stations for both the listener and static class instance! IMPORTANT
 		trainStations.add(this);
 		TrainStationLis.addStation(this);
 	}
 
+	/**
+	 * We require the JavaPlugin because this class must be able to access the database.
+	 * This is the standard constructor with a custom stop block.
+	 * 
+	 * @param plugin
+	 * @param stationName
+	 * @param corners
+	 * @param world
+	 * @param stopMat
+	 * @throws TooLowException
+	 */
+	public TrainStation(final JavaPlugin plugin, String stationName, Map<CardinalMarker, Location> corners, World world, Material stopMat) throws TooLowException { 
+		if(db == null) db = new DBAccess(plugin);
+		this.stationName = stationName;
+		this.corners = corners;
+		List<Chunk> chunk = new ArrayList<Chunk>();
+		for(Location loc : corners.values()) {
+			if(world == null) world = loc.getWorld();
+			if(!chunk.contains(loc.getChunk()))	chunk.add(loc.getChunk());
+		}
+		this.world = world;
+		this.perimeter = generatePerimeter();
+		this.surfaceBlocks = generateSurface();
+		this.area = getFullArea(this.surfaceBlocks);
+		this.trainArea = getTrainArea(this.surfaceBlocks);
+		this.rails = findRails();
+		this.stopBlocks = this.findStopBlocks(stopMat);
+		this.signs = generateSignLogic();
+		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
+		BlockFace tempDir = null;
+		if(dir != null) {
+			tempDir = TrainTools.getDirection(dir.getLine(2));
+		}
+		if(tempDir != null) {
+			this.direction = tempDir;	
+		}
+		else {
+			this.direction = BlockFace.SELF;
+		}
+		findWorkers();
+
+		//Add to the list of stations for both the listener and static class instance! IMPORTANT
+		trainStations.add(this);
+		TrainStationLis.addStation(this);
+	}
+	
+	public abstract void createTransport();
+
+	/**
+	 * Adds the train station to the database, in case of a server wide crash.
+	 */
 	public void addToDB() {
 		TrainStationTbl station = new TrainStationTbl();
 		station.setStationName(stationName);
@@ -138,52 +196,6 @@ public abstract class TrainStation {
 		db.getDB().save(station);
 	}
 
-	/**
-	 * We require the JavaPlugin because this class must be able to access the database.
-	 * This is the standard constructor with a custom stop block.
-	 * 
-	 * @param plugin
-	 * @param stationName
-	 * @param corners
-	 * @param world
-	 * @param stopMat
-	 * @throws TooLowException
-	 */
-	public TrainStation(final JavaPlugin plugin, String stationName, Map<CardinalMarker, Location> corners, World world, Material stopMat) throws TooLowException { 
-		if(db == null) db = new DBAccess(plugin);
-		this.stationName = stationName;
-		this.corners = corners;
-		List<Chunk> chunk = new ArrayList<Chunk>();
-		for(Location loc : corners.values()) {
-			if(world == null) world = loc.getWorld();
-			if(!chunk.contains(loc.getChunk()))	chunk.add(loc.getChunk());
-		}
-		this.world = world;
-		this.perimeter = generatePerimeter();
-		this.surfaceBlocks = generateSurface();
-		this.area = getFullArea(this.surfaceBlocks);
-		this.trainArea = getTrainArea(this.surfaceBlocks);
-		this.rails = findRails();
-		this.stopBlock = this.findStopBlock(stopMat);
-		this.signs = generateSignLogic();
-		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
-		BlockFace tempDir = null;
-		if(dir != null) {
-			tempDir = TrainTools.getDirection(dir.getLine(2));
-		}
-		if(tempDir != null) {
-			this.direction = tempDir;	
-		}
-		else {
-			this.direction = BlockFace.SELF;
-		}
-		findWorkers();
-		findPlayers();
-
-		//Add to the list of stations! IMPORTANT
-		trainStations.add(this);
-		TrainStationLis.addStation(this);
-	}
 
 	public MinecartGroup[] getDepartingTrains() {
 		long current = this.world.getTime();
@@ -312,13 +324,11 @@ public abstract class TrainStation {
 	}
 
 	protected void findWorkers() {
+		//TODO
 	}
 
 	public List<Block> getSurface() {
 		return this.surfaceBlocks;
-	}
-
-	public void findPlayers() {
 	}
 
 	public void addVisitor(Player visitor) {
@@ -348,29 +358,86 @@ public abstract class TrainStation {
 			}
 		}
 	}
+	
+	/**
+	 * Adds a cart to the train scheduled for departure
+	 * 
+	 * @param type
+	 * @param owner
+	 */
+	public void addCart(EntityType type, Player owner) {
+		String trainName = this.departingTrain.getProperties().getTrainName();
+		if(this.departingTrain == null) { owner.sendMessage("There are currently no trains to buy carts for."); return; }
+		int trainSize = this.departingTrain.size();
+		Block toSpawn = null;
+		BlockFace dirToLook = this.direction.getOppositeFace();
+		SmallBlockMap sbm = new SmallBlockMap(this.departingTrain.get(this.departingTrain.size() - 1).getBlock());
+		for(int i = 0; i <= trainSize; i++) {
+			sbm = new SmallBlockMap(sbm.getBlockAt(dirToLook));
+			if(!sbm.nextIsRail(dirToLook)) {
+				if(i < trainSize) {owner.sendMessage("There is no room in the station to buy a cart!"); return; }
+			}
+			if(i == trainSize) toSpawn = sbm.getBlockAt(dirToLook);
+		}
+		
+		//If there is no room, do not spawn additional carts.
+		if(toSpawn == null) { owner.sendMessage("There is not enough room to spawn additonal carts."); return; }
+		
+		//Spawn the cart and join it to the train.
+		MinecartMember<?> toJoin = MinecartMemberStore.spawn(toSpawn.getLocation(), type);
+		toJoin.getProperties().setOwner(owner.getName().toLowerCase());
+		this.departingTrain.add(toJoin);
+		this.departingTrain.getProperties().setName(trainName);
+		GroupCreateEvent.call(this.departingTrain);
+		
+		//Send a message saying it has been done.
+		if(type.equals(EntityType.MINECART)) owner.sendMessage("You bought a passenger cart");
+		else if(type.equals(EntityType.MINECART_CHEST)) owner.sendMessage("You bought a storage cart");
+	}
+	
+	
+	/**
+	 * Removes a cart from the departing train.
+	 * 
+	 * @param type
+	 * @param remover
+	 */
+	public void removeCart(EntityType type, Player remover) {
+		if(this.departingTrain == null) { remover.sendMessage("There is no train in the station."); return; }
+		MinecartGroup train = this.departingTrain;
+		for(MinecartMember<?> cart : train) {
+			CartProperties cartP = cart.getProperties();
+			if(cartP.getOwners().contains(remover.getName().toLowerCase())) {
+				train.removeSilent(cart); 
+				cart.getGroup().destroy();
+				return;
+			}
+		}
+		remover.sendMessage("You have no train carts to remove.");
+	}
 
 	/**
 	 * Finds the next train queued for departure. Its front cart (furnace cart) will be just above the stop block.
 	 * 
 	 * @return
 	 */
-	public MinecartGroup findNextDeparture() {
-		for(MinecartGroup mg : this.trains) {
-			if(mg.get(0).getGroundBlock().equals(this.stopBlock)) {
-				return mg;
-			}
-		}
-		return null;
+	public abstract MinecartGroup findNextDeparture();
+	
+	public MinecartGroup getDepartingTrain() {
+		return departingTrain;
+	}
+	
+	public void setDepartingTrain(MinecartGroup train) {
+		this.departingTrain = train;
 	}
 
+	public abstract boolean pushQueue();
 	/**
 	 * Changes the signs to reflect the buying and selling of carts for the specified train.
 	 * 
 	 * @param trainName
 	 */
-	public void changeSignLogic(String trainName) {
-		this.signs.updateTrain(trainName);
-	}
+	public abstract void changeSignLogic(String trainName);
 
 	/**
 	 * Gets the block that trains will stop on, specified by a specific material.
@@ -379,21 +446,16 @@ public abstract class TrainStation {
 	 * @param m
 	 * @return
 	 */
-	public Block findStopBlock(Material m) {
-		for(Block b : this.trainArea) {
-			if(b.getType().equals(m)) {
-				return b.getRelative(BlockFace.UP);
-			}
-		}
-		return null;
-	}
+	public abstract List<Block> findStopBlocks(Material m);
 
-	public Block getStopBlock() {
-		return stopBlock;
+	public List<Block> getStopBlock() {
+		return stopBlocks;
 	}
 
 	/**
 	 * This finds the rails which are within the train station.
+	 * <p>
+	 * This DOES NOT SHOW PATHWAYS. That is to be determined for each subclass.
 	 * 
 	 * @return
 	 */
@@ -409,6 +471,12 @@ public abstract class TrainStation {
 
 	//TODO Various Getters and Setters for the Train Station class.
 
+	public void addTrain(MinecartGroup train) {
+		this.trains.add(train);
+	}
+	public void removeTrain(MinecartGroup train) {
+		this.trains.remove(train);
+	}
 	/**
 	 * Gets all of the existing train stations.
 	 * 

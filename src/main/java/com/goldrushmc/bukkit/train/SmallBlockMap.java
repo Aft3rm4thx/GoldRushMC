@@ -35,6 +35,16 @@ public class SmallBlockMap implements Discoverable {
 
 	}
 
+	public Block getBlockAt(BlockFace direction) {
+		switch(direction) {
+		case NORTH: return this.getNorth();
+		case SOUTH: return this.getSouth();
+		case EAST: return this.getEast();
+		case WEST: return this.getWest();
+		default: return null;
+		}
+	}
+	
 	@Override
 	public Block getMainBlock() {return block;}
 	
@@ -118,6 +128,11 @@ public class SmallBlockMap implements Discoverable {
 	@Override
 	public boolean hasRailConnection() {
 		return potentialConnections() >= 1;
+	}
+	
+	public boolean nextIsRail(BlockFace direction) {
+		if(this.isRail(this.getBlockAt(direction))) return true;
+		else return false;
 	}
 
 	@Override

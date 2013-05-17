@@ -391,8 +391,9 @@ public class TrainFactory {
 
 		MinecartGroup mg = MinecartGroup.spawn(loc, cart);
 
+		TrainProperties tp = trainToLink.getProperties();
 		//Set the pseudo-train's properties to the train we want to link it to.
-		mg.setProperties(trainToLink.getProperties());
+		mg.setProperties(tp);
 
 		//Get the minecart (should be the ONLY one at this point) of this "pseudo-train"
 		MinecartMember<?> m2 = mg.get(0);

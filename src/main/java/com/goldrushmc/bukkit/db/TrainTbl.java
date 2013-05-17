@@ -20,6 +20,7 @@ public class TrainTbl {
 	@Id @GeneratedValue private int id;
 	@Column(name = "TRAIN_NAME") @NotEmpty private String name;
 	@Column(name = "WORLD") @NotEmpty private String worldName;
+	@OneToMany(mappedBy = "train") private Set<CartListTbl> carts;
 	@OneToMany(mappedBy = "train") private Set<TrainScheduleTbl> schedule;
 	@OneToOne private TrainStatusTbl status;
 	@ManyToOne private TrainStationTbl station;
@@ -65,5 +66,17 @@ public class TrainTbl {
 	}
 	public void setStation(TrainStationTbl station) {
 		this.station = station;
+	}
+	/**
+	 * @return the carts
+	 */
+	public Set<CartListTbl> getCarts() {
+		return carts;
+	}
+	/**
+	 * @param carts the carts to set
+	 */
+	public void setCarts(Set<CartListTbl> carts) {
+		this.carts = carts;
 	}
 }
