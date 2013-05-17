@@ -3,6 +3,7 @@ package com.goldrushmc.bukkit.bank;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -40,7 +41,7 @@ public class InventoryLis extends DefaultListener {
 	@EventHandler
     public void onPlayerDeath(PlayerDeathEvent e) {        
 		List<ItemStack> drops = e.getDrops();           
-		for (int i = 0; i <= drops.size(); i++) {                   
+		for (int i = 0; i < drops.size(); i++) {                   
 			if (drops.get(i).getTypeId() == 34) {                           
 				e.getDrops().remove(i);                           
 				i = i - 1;                           
@@ -57,6 +58,7 @@ public class InventoryLis extends DefaultListener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerRespawn(PlayerRespawnEvent e) {	
 		//Schedule run to fill player's inventory in 30 ticks
+		if(e.getPlayer().getGameMode().equals(GameMode.ADVENTURE))
 		Bukkit.getScheduler().runTaskLater(plugin, new FillInv(e.getPlayer()), 30);
 	}
 	
@@ -70,6 +72,7 @@ public class InventoryLis extends DefaultListener {
 				
 		@Override
 		public void run() {
+			if(p.getGameMode().equals(GameMode.ADVENTURE))
 			for(int i = 9; i < 27; i++) {
 				p.getInventory().setItem(i, new ItemStack(Material.PISTON_EXTENSION));
 			}
