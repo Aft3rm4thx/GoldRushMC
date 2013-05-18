@@ -15,6 +15,8 @@ public enum SignType {
 	TOWN(new Permission("goldrushmc.sign.town")),
 	TRAIN_STATION(new Permission("goldrushmc.sign.station")),
 	TRAIN_STATION_DIRECTION(new Permission("goldrushmc.sign.direction")),
+	TRAIN_STATION_TIME(new Permission("goldrushmc.sign.time")),
+	TRAIN_STATION_CART_COUNT(new Permission("goldrushmc.sign.cartcount")),
 	ADD_STORAGE_CART(new Permission("goldrushmc.sign.addstorecart")),
 	REMOVE_STORAGE_CART(new Permission("goldrushmc.sign.removestorecart")),
 	ADD_RIDE_CART(new Permission("goldrushmc.sign.addridecart")),

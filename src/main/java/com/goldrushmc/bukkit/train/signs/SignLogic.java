@@ -83,6 +83,16 @@ public class SignLogic implements ISignLogic {
 							this.signTypes.put(s, SignType.TRAIN_STATION_DIRECTION);
 							this.signs.put(lines[1], s);
 						}
+						else if(lines[1].equals("Time Remaining:")) {
+							this.signList.add(s);
+							this.signTypes.put(s, SignType.TRAIN_STATION_TIME);
+							this.signs.put(lines[1], s);
+						}
+						else if(lines[1].equals("Carts Available")) {
+							this.signList.add(s);
+							this.signTypes.put(s, SignType.TRAIN_STATION_CART_COUNT);
+							this.signs.put(lines[1], s);
+						}
 					}
 					//TODO Could be used for house signs.
 					else if(lines[0].equals("{houses}")) {
@@ -113,7 +123,7 @@ public class SignLogic implements ISignLogic {
 	public Map<Sign, SignType> getSignTypes() {
 		return signTypes;
 	}
-	
+
 	@Override
 	public Sign getSign(SignType type) {
 		for(Sign sign : this.signTypes.keySet()) {
@@ -124,20 +134,37 @@ public class SignLogic implements ISignLogic {
 		return null;
 	}
 
-
 	@Override
 	public void updateTrain(String trainName) {
 		List<Sign> signsToChange = new ArrayList<Sign>();
 		//Get the signs to change.
 		for(Sign sign : this.signTypes.keySet()) {
 			SignType s = this.signTypes.get(sign);
-			if(s.equals(SignType.TRAIN_STATION) || s.equals(SignType.ADD_RIDE_CART) || s.equals(SignType.ADD_STORAGE_CART) || s.equals(SignType.REMOVE_RIDE_CART) || s.equals(SignType.REMOVE_STORAGE_CART)) {
-				signsToChange.add(sign);
+			switch(s) {
+			case ADD_RIDE_CART:
+			case ADD_STORAGE_CART:
+			case FIX_BRIDGE:
+			case REMOVE_RIDE_CART:
+			case REMOVE_STORAGE_CART:
+			case TRAIN_STATION:
+			case TRAIN_STATION_CART_COUNT:
+			case TRAIN_STATION_DIRECTION:
+			case TRAIN_STATION_TIME: signsToChange.add(sign); break;
+			default: break;	
 			}
 		}
 		//Set the new value.
 		for(Sign s : signsToChange) {
-			s.setLine(2, trainName);
+			if(s.getLine(1).equals("Carts Available")) {
+				s.setLine(2, "N/A");
+			}
+			else if(s.getLine(1).equals("Time Remaining:")) {
+				s.setLine(2, "N/A");
+			}
+			else if(s.getLine(1).equals("direction")) continue;
+			else {
+				s.setLine(2, trainName);
+			}
 			s.update();
 		}
 		//Create new lists and update.
@@ -165,6 +192,18 @@ public class SignLogic implements ISignLogic {
 			}
 			else if(lines[1].equals("sell_ride")) {
 				this.signTypes.put(s, SignType.REMOVE_RIDE_CART);
+				this.signs.put(lines[1], s);
+			}
+			else if(lines[1].equals("Time Remaining:")) {
+				this.signTypes.put(s, SignType.TRAIN_STATION_TIME);
+				this.signs.put(lines[1], s);
+			}
+			else if(lines[1].equals("Carts Available")) {
+				this.signTypes.put(s, SignType.TRAIN_STATION_CART_COUNT);
+				this.signs.put(lines[1], s);
+			}
+			else if(lines[1].equals("direction")) {
+				this.signTypes.put(s, SignType.TRAIN_STATION_DIRECTION);
 				this.signs.put(lines[1], s);
 			}
 		}

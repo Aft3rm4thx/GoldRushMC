@@ -10,19 +10,26 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Minecart;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
+import com.bergerkiller.bukkit.tc.controller.MinecartMemberStore;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.events.MemberBlockChangeEvent;
+import com.bergerkiller.bukkit.tc.properties.CartProperties;
 import com.goldrushmc.bukkit.defaults.DefaultListener;
+import com.goldrushmc.bukkit.train.TrainFactory;
 import com.goldrushmc.bukkit.train.event.EnterTrainStationEvent;
 import com.goldrushmc.bukkit.train.event.ExitTrainStationEvent;
 import com.goldrushmc.bukkit.train.event.StationSignEvent;
@@ -79,25 +86,25 @@ public class TrainStationLis extends DefaultListener {
 		if(cart instanceof MinecartMemberFurnace) {
 			furnace = (MinecartMemberFurnace) cart;
 		}
-		
+
 		//We don't care about non-furnaces. Furnaces lead the charge!
 		if(furnace == null) return;
 
 		if(stationArea.containsKey(to)) {
-				if(!stationArea.containsKey(from)) {
-					//Entering station
-					String station = stationArea.get(to);
-					TrainEnterStationEvent enter = new TrainEnterStationEvent(stationStore.get(station), event.getGroup());
-					Bukkit.getServer().getPluginManager().callEvent(enter);	
-				}
+			if(!stationArea.containsKey(from)) {
+				//Entering station
+				String station = stationArea.get(to);
+				TrainEnterStationEvent enter = new TrainEnterStationEvent(stationStore.get(station), event.getGroup());
+				Bukkit.getServer().getPluginManager().callEvent(enter);	
+			}
 
-				//The train has hit the stop block, and needs to stop.
-				else if(stationStore.get(stationArea.get(to)).getStopBlock().contains(to)) {
-					String station = stationArea.get(to);
-					//Check to see if the train has been stopped. if so, don't call the event.
-					if(hasStopped.containsKey(mg)) if(hasStopped.get(mg)) return;
-					TrainFullStopEvent stop = new TrainFullStopEvent(stationStore.get(station), event.getGroup());
-					Bukkit.getServer().getPluginManager().callEvent(stop);
+			//The train has hit the stop block, and needs to stop.
+			else if(stationStore.get(stationArea.get(to)).getStopBlock().contains(to)) {
+				String station = stationArea.get(to);
+				//Check to see if the train has been stopped. if so, don't call the event.
+				if(hasStopped.containsKey(mg)) if(hasStopped.get(mg)) return;
+				TrainFullStopEvent stop = new TrainFullStopEvent(stationStore.get(station), event.getGroup());
+				Bukkit.getServer().getPluginManager().callEvent(stop);
 			}
 		}
 		//Leaving station
@@ -156,10 +163,10 @@ public class TrainStationLis extends DefaultListener {
 
 		//Determine which thing to perform.
 		switch(type) {
-		case ADD_STORAGE_CART: station.addCart(EntityType.MINECART_CHEST, player); break;
-		case ADD_RIDE_CART: station.addCart(EntityType.MINECART, player); break;
-		case REMOVE_STORAGE_CART: station.removeCart(EntityType.MINECART_CHEST, player); break;
-		case REMOVE_RIDE_CART: station.removeCart(EntityType.MINECART, player); break;
+		case ADD_STORAGE_CART: station.buyCart(player, EntityType.MINECART_CHEST); break;
+		case ADD_RIDE_CART: station.buyCart(player, EntityType.MINECART); break;
+		case REMOVE_STORAGE_CART: station.sellCart(player, EntityType.MINECART_CHEST); break;
+		case REMOVE_RIDE_CART: station.sellCart(player, EntityType.MINECART); break;
 		case FIX_BRIDGE: //TODO This will deal with fixing the broken rail pathways. NO logic exists yet for path finding.
 		default: break; //If it is none of these, we do not care right now.
 		}
@@ -188,7 +195,7 @@ public class TrainStationLis extends DefaultListener {
 
 	@EventHandler
 	public void onTrainDepart(TrainExitStationEvent event) {
-//		Bukkit.broadcastMessage(event.getTrain().getProperties().getTrainName() + " has left the station " + event.getTrainStation().getStationName());
+		//		Bukkit.broadcastMessage(event.getTrain().getProperties().getTrainName() + " has left the station " + event.getTrainStation().getStationName());
 		event.getTrainStation().removeTrain(event.getTrain());
 		hasStopped.put(event.getTrain(), false);
 	}
@@ -197,11 +204,13 @@ public class TrainStationLis extends DefaultListener {
 	@EventHandler
 	public void onTrainArrive(TrainEnterStationEvent event) {
 		MinecartGroup mg = event.getTrain();
-		event.getTrainStation().addTrain(mg);
-//		Bukkit.broadcastMessage(mg.getProperties().getTrainName() + " has entered the station " + event.getTrainStation().getStationName());
+		TrainStation station = event.getTrainStation();
 		mg.getProperties().setSpeedLimit(0.2);
+		mg.getProperties().setColliding(true);
+		station.addTrain(mg);
+		//		Bukkit.broadcastMessage(mg.getProperties().getTrainName() + " has entered the station " + event.getTrainStation().getStationName());
 		hasStopped.put(event.getTrain(), false);
-		
+
 	}
 
 	@EventHandler
@@ -226,6 +235,30 @@ public class TrainStationLis extends DefaultListener {
 		}
 		event.getTrainStation().changeSignLogic(event.getTrain().getProperties().getTrainName());
 		event.getTrainStation().setDepartingTrain(train);
+	}
+
+	/**
+	 * This will facilitate the need to update the {@link TrainFactory#ownerStorage} list, because if the inventory changes, the instance changes.
+	 * 
+	 * @param e The {@link InventoryMoveItemEvent} associated with the chest.
+	 */
+	@EventHandler
+	public void onInventoryOpening(InventoryOpenEvent e) {
+		Inventory inv = e.getInventory();
+		if(e.getPlayer() instanceof Player) {
+			Player p = (Player) e.getPlayer();
+			if(inv.getHolder() instanceof Minecart) {
+				Minecart cart = (Minecart) inv.getHolder();
+				MinecartMember<?> toCheck = MinecartMemberStore.getAt(cart.getLocation());
+				if(toCheck != null) {
+					CartProperties cp = toCheck.getProperties();
+					if(!cp.getOwners().contains(p.getName().toLowerCase())) {
+						p.sendMessage(ChatColor.RED + "You do not own this chest!");
+						e.setCancelled(true);
+					}
+				}
+			}
+		}
 	}
 
 	public void populate() {
