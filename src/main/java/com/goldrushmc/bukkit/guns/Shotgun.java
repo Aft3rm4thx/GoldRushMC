@@ -24,7 +24,7 @@ public class Shotgun {
 	public GunTools gunTools = new GunTools();
 	public int fireDelay = 60;
 	public List<Integer> firedEntity = new ArrayList<Integer>();
-	public int damage = 12;
+	public int damage = 16;
 	public int shotNo = 6;
 	boolean canFire = true;
 
