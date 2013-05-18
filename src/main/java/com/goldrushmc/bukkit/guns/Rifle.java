@@ -23,7 +23,7 @@ public class Rifle {
 	public GunTools gunTools = new GunTools();
 	public int fireDelay = 60;
 	public int firedEntity = 0;
-	public int damage = 16;
+	public int damage = 12;
 	boolean canFire = true;
 
 	public Rifle(Player player, Plugin plu) {

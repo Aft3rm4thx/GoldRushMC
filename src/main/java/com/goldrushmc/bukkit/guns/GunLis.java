@@ -11,6 +11,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
 import com.bergerkiller.bukkit.common.events.EntityMoveEvent;
@@ -38,7 +40,7 @@ public class GunLis extends DefaultListener {
 		Action eAction = e.getAction();
 		Player p = e.getPlayer();
 		if(eAction.equals(Action.RIGHT_CLICK_AIR) || eAction.equals(Action.RIGHT_CLICK_BLOCK)) {
-			
+			if(!p.isSneaking()) {			
 			//Revolver
 			if (p.getItemInHand().getType().equals(Material.GOLD_AXE)) {
 				if (p.getItemInHand().getItemMeta().hasDisplayName()) {
@@ -96,6 +98,10 @@ public class GunLis extends DefaultListener {
 					}
 				}
 			}
+		} else {
+			p.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 30, 20));
+		}
+			
 		}		
 	}
 	
