@@ -1,7 +1,6 @@
 package com.goldrushmc.bukkit.train.station;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,10 +9,8 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
@@ -29,8 +26,8 @@ public class TrainStationTransport extends TrainStation {
 	private final int maxStopBlocks = 4;
 	private final Material stopMat;
 	private Block mainStop;
-	private final List<Chest> lockers;
-	private Map<Player, Chest> lockerPlayerMap = new HashMap<Player, Chest>();
+//	private final List<Chest> lockers;
+//	private Map<Player, Chest> lockerPlayerMap = new HashMap<Player, Chest>();
 
 	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world) throws TooLowException, StopBlockMismatchException {
 		super(plugin, stationName, corners, world);
@@ -48,7 +45,7 @@ public class TrainStationTransport extends TrainStation {
 			if(this.stopBlocks.size() > maxStopBlocks) throw new StopBlockMismatchException();
 			createTransport();	
 		}
-		this.lockers = findLockers();
+//		this.lockers = findLockers();
 	}
 	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world, Material stopMat) throws TooLowException, StopBlockMismatchException {
 		super(plugin, stationName, corners, world, stopMat);
@@ -59,7 +56,7 @@ public class TrainStationTransport extends TrainStation {
 			if(this.stopBlocks.size() > maxStopBlocks) throw new StopBlockMismatchException();
 			createTransport();	
 		}
-		this.lockers = findLockers();
+//		this.lockers = findLockers();
 	}
 
 	/**
@@ -79,9 +76,9 @@ public class TrainStationTransport extends TrainStation {
 		return lockers;
 	}
 	
-	public List<Chest> getLockers() {
-		return this.lockers;
-	}
+//	public List<Chest> getLockers() {
+//		return this.lockers;
+//	}
 	
 	public void buyCart() {
 		
