@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -22,9 +20,10 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.bergerkiller.bukkit.tc.controller.MinecartMemberStore;
+import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
-import com.bergerkiller.bukkit.tc.events.GroupCreateEvent;
 import com.bergerkiller.bukkit.tc.properties.CartProperties;
+import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import com.goldrushmc.bukkit.db.TrainScheduleTbl;
 import com.goldrushmc.bukkit.db.TrainStationLocationTbl;
 import com.goldrushmc.bukkit.db.TrainStationTbl;
@@ -70,7 +69,7 @@ public abstract class TrainStation {
 
 	/**
 	 * We require the JavaPlugin because this class must be able to access the database.
-	 * This is the standard constructor, with the default stop block.
+	 * This is the standard constructor, with the default stop block material..
 	 * 
 	 * @param plugin
 	 * @param stationName
@@ -78,15 +77,10 @@ public abstract class TrainStation {
 	 * @param world
 	 * @throws TooLowException
 	 */
-	public TrainStation(final JavaPlugin plugin, String stationName, Map<CardinalMarker, Location> corners, World world) throws TooLowException { 
+	public TrainStation(final JavaPlugin plugin, final String stationName, final Map<CardinalMarker, Location> corners, final World world) throws TooLowException { 
 		if(db == null) db = new DBAccess(plugin);
 		this.stationName = stationName;
 		this.corners = corners;
-		List<Chunk> chunk = new ArrayList<Chunk>();
-		for(Location loc : corners.values()) {
-			if(world == null) world = loc.getWorld();
-			if(!chunk.contains(loc.getChunk()))	chunk.add(loc.getChunk());
-		}
 		this.world = world;
 		this.perimeter = generatePerimeter();
 		this.surfaceBlocks = generateSurface();
@@ -114,7 +108,7 @@ public abstract class TrainStation {
 
 	/**
 	 * We require the JavaPlugin because this class must be able to access the database.
-	 * This is the standard constructor with a custom stop block.
+	 * This is the standard constructor with a custom stop block material.
 	 * 
 	 * @param plugin
 	 * @param stationName
@@ -123,15 +117,10 @@ public abstract class TrainStation {
 	 * @param stopMat
 	 * @throws TooLowException
 	 */
-	public TrainStation(final JavaPlugin plugin, String stationName, Map<CardinalMarker, Location> corners, World world, Material stopMat) throws TooLowException { 
+	public TrainStation(final JavaPlugin plugin, final String stationName, final Map<CardinalMarker, Location> corners, final World world, Material stopMat) throws TooLowException { 
 		if(db == null) db = new DBAccess(plugin);
 		this.stationName = stationName;
 		this.corners = corners;
-		List<Chunk> chunk = new ArrayList<Chunk>();
-		for(Location loc : corners.values()) {
-			if(world == null) world = loc.getWorld();
-			if(!chunk.contains(loc.getChunk()))	chunk.add(loc.getChunk());
-		}
 		this.world = world;
 		this.perimeter = generatePerimeter();
 		this.surfaceBlocks = generateSurface();
@@ -215,13 +204,47 @@ public abstract class TrainStation {
 		}
 		return toDepart;
 	}
+	
+	/**
+	 * The standard train creation method. This is an optional way to create a train with one furnace and one chest cart.
+	 * 
+	 * @param stop The {@link Block} to spawn the train on.
+	 */
+	public void createBuyableTrain(Block stop) {
 
+		if(this.trains == null) this.trains = new ArrayList<MinecartGroup>();
+		int trainNum = this.trains.size() + 1;
 
-	public void createSidewalk() {
-		for(Block b : this.perimeter) {
-			b.setType(Material.STEP);
+		List<EntityType> carts = new ArrayList<EntityType>();
+		carts.add(EntityType.MINECART_CHEST);
+		carts.add(EntityType.MINECART_FURNACE);
+		//Should make the furnace spawn right on top of the stop block.
+		MinecartGroup train = MinecartGroup.spawn(stop, this.direction.getOppositeFace(), carts);
+		for(MinecartMember<?> mm : train) {
+			if(mm instanceof MinecartMemberChest) {
+//				ItemStack coal = new ItemStack(Material.COAL, 64);
+//				MinecartMemberChest coalChest = (MinecartMemberChest) mm;
+				//			coalChest.getEntity().getInventory().addItem(new ItemStack[]{coal, coal, coal, coal, coal, coal});			
+			}
+			if(mm instanceof MinecartMemberFurnace) {
+			}
 		}
+
+		TrainProperties tp = train.getProperties();
+		tp.setName(stationName + "_" + trainNum);
+		tp.setColliding(false);
+		tp.setSpeedLimit(0.4);
+		tp.setPublic(false);
+		tp.setManualMovementAllowed(false);
+		tp.setKeepChunksLoaded(true);
+		tp.setPickup(false);
+		train.setProperties(tp);
+
+		this.addTrain(train);
+		this.findNextDeparture();
+		this.changeSignLogic(train.getProperties().getTrainName());
 	}
+
 
 	/**
 	 * Creates a perimeter around the train station.
@@ -361,34 +384,56 @@ public abstract class TrainStation {
 	
 	/**
 	 * Adds a cart to the train scheduled for departure
+	 * <p>
+	 * DEFAULT IMPLEMENTATION.
 	 * 
 	 * @param type
 	 * @param owner
 	 */
 	public void addCart(EntityType type, Player owner) {
-		String trainName = this.departingTrain.getProperties().getTrainName();
+		
+		//Check if the departing train does not exist. this may happen, for a brief period, between the departing train leaving and the arriving train arriving.
 		if(this.departingTrain == null) { owner.sendMessage("There are currently no trains to buy carts for."); return; }
-		int trainSize = this.departingTrain.size();
+		
+		//Get train name, in case the departing train forgets!
+		String trainName = this.departingTrain.getProperties().getTrainName();
+//		int trainSize = this.departingTrain.size() - 1;
 		Block toSpawn = null;
 		BlockFace dirToLook = this.direction.getOppositeFace();
-		SmallBlockMap sbm = new SmallBlockMap(this.departingTrain.get(this.departingTrain.size() - 1).getBlock());
-		for(int i = 0; i <= trainSize; i++) {
-			sbm = new SmallBlockMap(sbm.getBlockAt(dirToLook));
-			if(!sbm.nextIsRail(dirToLook)) {
-				if(i < trainSize) {owner.sendMessage("There is no room in the station to buy a cart!"); return; }
-			}
-			if(i == trainSize) toSpawn = sbm.getBlockAt(dirToLook);
+		//Make sure that we are on the right end of the train, to spawn.
+		MinecartMember<?> toJoinTo = null;
+		if(this.departingTrain.get(0) instanceof MinecartMemberFurnace) {
+			toJoinTo = this.departingTrain.get(this.departingTrain.size() - 1);
 		}
-		
+		else {
+			toJoinTo = this.departingTrain.get(0);
+		}
+		//Set the block map to the correct minecart member's block.
+		SmallBlockMap sbm = new SmallBlockMap(toJoinTo.getBlock());
+		if(sbm.isRail(sbm.getBlockAt(dirToLook))) {
+				toSpawn = sbm.getBlockAt(dirToLook);
+		}
 		//If there is no room, do not spawn additional carts.
 		if(toSpawn == null) { owner.sendMessage("There is not enough room to spawn additonal carts."); return; }
 		
+		Location fixed = toSpawn.getLocation();
+		switch(this.direction) {
+		case NORTH: fixed.setZ(fixed.getZ() + 0.75); break;
+		case SOUTH: fixed.setZ(fixed.getZ() - 0.75); break;
+		case EAST: fixed.setX(fixed.getX() - 0.75); break;
+		case WEST: fixed.setX(fixed.getX() + 0.75); break;
+		default: break;
+		}
+		
 		//Spawn the cart and join it to the train.
-		MinecartMember<?> toJoin = MinecartMemberStore.spawn(toSpawn.getLocation(), type);
+		MinecartMember<?> toJoin = MinecartMemberStore.spawn(fixed, type);
+		//Set the new minecarts group properties to the same as the departing train.
+		toJoin.getGroup().setProperties(this.departingTrain.getProperties());
+		//Set the owner (hoping this works) to the person who bought the cart.
 		toJoin.getProperties().setOwner(owner.getName().toLowerCase());
-		this.departingTrain.add(toJoin);
+		MinecartGroup.link(toJoin, toJoinTo);
+		//Re-set the name of the departing train, after linking.
 		this.departingTrain.getProperties().setName(trainName);
-		GroupCreateEvent.call(this.departingTrain);
 		
 		//Send a message saying it has been done.
 		if(type.equals(EntityType.MINECART)) owner.sendMessage("You bought a passenger cart");

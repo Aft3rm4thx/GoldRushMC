@@ -197,9 +197,11 @@ public class TrainStationLis extends DefaultListener {
 	@EventHandler
 	public void onTrainArrive(TrainEnterStationEvent event) {
 		MinecartGroup mg = event.getTrain();
-		event.getTrainStation().addTrain(mg);
-//		Bukkit.broadcastMessage(mg.getProperties().getTrainName() + " has entered the station " + event.getTrainStation().getStationName());
+		TrainStation station = event.getTrainStation();
 		mg.getProperties().setSpeedLimit(0.2);
+		mg.getProperties().setColliding(true);
+		station.addTrain(mg);
+		//		Bukkit.broadcastMessage(mg.getProperties().getTrainName() + " has entered the station " + event.getTrainStation().getStationName());
 		hasStopped.put(event.getTrain(), false);
 		
 	}

@@ -12,8 +12,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
+import com.bergerkiller.bukkit.tc.events.GroupCreateEvent;
 import com.bergerkiller.bukkit.tc.events.GroupLinkEvent;
-import com.bergerkiller.bukkit.tc.events.MemberSpawnEvent;
 import com.goldrushmc.bukkit.defaults.DefaultListener;
 import com.goldrushmc.bukkit.train.TrainFactory;
 
@@ -23,8 +23,8 @@ public class TrainLis extends DefaultListener {
 		super(plugin);
 	}
 	
-	public void onTrainSpawn(MemberSpawnEvent event) {
-		
+	public void onBuyCartEvent(GroupCreateEvent event) {
+		event.getGroup();
 	}
 
 	/**

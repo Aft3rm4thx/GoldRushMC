@@ -1,6 +1,7 @@
 package com.goldrushmc.bukkit.train.station;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -9,7 +10,10 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Chest;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
@@ -18,12 +22,15 @@ import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import com.goldrushmc.bukkit.train.CardinalMarker;
+import com.goldrushmc.bukkit.train.SmallBlockMap;
 
 public class TrainStationTransport extends TrainStation {
 
 	private final int maxStopBlocks = 4;
 	private final Material stopMat;
 	private Block mainStop;
+	private final List<Chest> lockers;
+	private Map<Player, Chest> lockerPlayerMap = new HashMap<Player, Chest>();
 
 	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world) throws TooLowException, StopBlockMismatchException {
 		super(plugin, stationName, corners, world);
@@ -41,13 +48,43 @@ public class TrainStationTransport extends TrainStation {
 			if(this.stopBlocks.size() > maxStopBlocks) throw new StopBlockMismatchException();
 			createTransport();	
 		}
+		this.lockers = findLockers();
 	}
-	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world, Material stopMat) throws TooLowException {
+	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world, Material stopMat) throws TooLowException, StopBlockMismatchException {
 		super(plugin, stationName, corners, world, stopMat);
 		this.stopMat = stopMat;
+		//Default to the first Block in the list of stopBlocks.
+		if(this.mainStop == null) this.mainStop = this.stopBlocks.get(0);
 		if(this.rails != null) {
+			if(this.stopBlocks.size() > maxStopBlocks) throw new StopBlockMismatchException();
 			createTransport();	
 		}
+		this.lockers = findLockers();
+	}
+
+	/**
+	 * A way to find all of the lockers in the area.
+	 * 
+	 * @return
+	 */
+	protected List<Chest> findLockers() {
+		List<Chest> lockers = new ArrayList<Chest>();
+		for(Block b : this.trainArea) {
+			if(b.getType().equals(Material.CHEST)) {
+				if(b.getState() instanceof Chest) {
+					lockers.add((Chest) b.getState());
+				}
+			}
+		}
+		return lockers;
+	}
+	
+	public List<Chest> getLockers() {
+		return this.lockers;
+	}
+	
+	public void buyCart() {
+		
 	}
 
 	@Override
@@ -57,14 +94,23 @@ public class TrainStationTransport extends TrainStation {
 		int trainNum = this.trains.size() + 1;
 
 		List<EntityType> carts = new ArrayList<EntityType>();
-		carts.add(EntityType.MINECART_CHEST);
+		SmallBlockMap sbm = new SmallBlockMap(this.mainStop);
+		BlockFace dir = this.direction.getOppositeFace();
+		//Iterate to get the max size of minecarts, or just short of it if the rails end.
+		for(int i = 0; i < 14; i++) {
+			sbm = new SmallBlockMap(sbm.getBlockAt(dir));
+			if(!sbm.isRail(sbm.getBlockAt(dir))) {
+				break;
+			}
+			carts.add(EntityType.MINECART_CHEST);
+		}
 		carts.add(EntityType.MINECART_FURNACE);
 		//Should make the furnace spawn right on top of the stop block.
 		MinecartGroup train = MinecartGroup.spawn(this.mainStop, this.direction.getOppositeFace(), carts);
 		for(MinecartMember<?> mm : train) {
 			if(mm instanceof MinecartMemberChest) {
-//				ItemStack coal = new ItemStack(Material.COAL, 64);
-//				MinecartMemberChest coalChest = (MinecartMemberChest) mm;
+				//				ItemStack coal = new ItemStack(Material.COAL, 64);
+				//				MinecartMemberChest coalChest = (MinecartMemberChest) mm;
 				//			coalChest.getEntity().getInventory().addItem(new ItemStack[]{coal, coal, coal, coal, coal, coal});			
 			}
 			if(mm instanceof MinecartMemberFurnace) {
@@ -85,7 +131,7 @@ public class TrainStationTransport extends TrainStation {
 		this.findNextDeparture();
 		this.changeSignLogic(train.getProperties().getTrainName());
 	}
-	
+
 	/**
 	 * Find the stop blocks for a typical transport station.
 	 * <p>
@@ -108,7 +154,7 @@ public class TrainStationTransport extends TrainStation {
 		}
 		return stopBlocks;
 	}
-	
+
 	@Override
 	public MinecartGroup findNextDeparture() {
 		for(MinecartGroup mg : this.trains) {
@@ -122,7 +168,7 @@ public class TrainStationTransport extends TrainStation {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public boolean pushQueue() {
 		MinecartGroup mg = findNextDeparture();
@@ -137,19 +183,20 @@ public class TrainStationTransport extends TrainStation {
 				}
 			}
 		}
+		this.departingTrain = null;
 		if(this.trains.isEmpty()) return true;
 		for(MinecartGroup train : this.trains) {
 			if(!train.equals(mg)) {
-				train.setForwardForce(.4);
+				train.setForwardForce(0.4);
 			}
 		}
 		return true;
 	}
-	
+
 	public void changeSignLogic(String trainName) {
 		this.signs.updateTrain(trainName);
 	}
-	
+
 	public Block getMainStopBlock() {
 		return this.mainStop;
 	}
