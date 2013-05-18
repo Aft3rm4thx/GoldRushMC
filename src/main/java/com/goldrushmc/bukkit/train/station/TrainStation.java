@@ -22,6 +22,7 @@ import com.bergerkiller.bukkit.tc.controller.MinecartMember;
 import com.bergerkiller.bukkit.tc.controller.MinecartMemberStore;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
+import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.properties.CartProperties;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
 import com.goldrushmc.bukkit.db.TrainScheduleTbl;
@@ -146,7 +147,7 @@ public abstract class TrainStation {
 		trainStations.add(this);
 		TrainStationLis.addStation(this);
 	}
-	
+
 	public abstract void createTransport();
 
 	/**
@@ -204,7 +205,68 @@ public abstract class TrainStation {
 		}
 		return toDepart;
 	}
-	
+
+	/**
+	 * Provides a standard way to sell carts.
+	 * 
+	 * @param owner
+	 * @param type
+	 */
+	public abstract void sellCart(Player owner, EntityType type);
+
+	/**
+	 * The default way for players to buy carts.
+	 * 
+	 * @param owner
+	 * @param type
+	 */
+	public abstract void buyCart(Player owner, EntityType type);
+
+	/**
+	 * A standard way to update the departure time for a single departing train.
+	 * 
+	 * @param time
+	 */
+	public void updateDepartureTime(MinecartGroup train, long time) {
+		if(train == null)  {
+			this.signs.getSign(SignType.TRAIN_STATION_TIME).setLine(2, "N/A");	
+		}
+		else {
+			this.signs.getSign(SignType.TRAIN_STATION_TIME).setLine(2, String.valueOf(time));	
+		}		
+		this.signs.getSign(SignType.TRAIN_STATION_TIME).update();
+	}
+
+	/**
+	 * A standard way to update the carts available for a single departing train.
+	 * 
+	 * @param type
+	 */
+	public void updateCartsAvailable(MinecartGroup train, EntityType type) {
+		if(train == null) {
+			this.signs.getSign(SignType.TRAIN_STATION_CART_COUNT).setLine(2, "0");
+			this.signs.getSign(SignType.TRAIN_STATION_CART_COUNT).update();
+			return;
+		}
+		train.size(type);
+		int countAvail = 0;
+		for(MinecartMember<?> cart : train) {
+			if(cart instanceof MinecartMemberFurnace) continue;
+			switch(type) {
+			case MINECART: if(cart instanceof MinecartMemberRideable) {
+				if(!cart.getProperties().hasOwners()) countAvail++;
+				break;
+			}
+			case MINECART_CHEST: if(cart instanceof MinecartMemberChest) {
+				if(!cart.getProperties().hasOwners()) countAvail++;
+				break;
+			}
+			default: break;
+			}
+		}
+		this.signs.getSign(SignType.TRAIN_STATION_CART_COUNT).setLine(2, String.valueOf(countAvail));
+		this.signs.getSign(SignType.TRAIN_STATION_CART_COUNT).update();
+	}
 	/**
 	 * The standard train creation method. This is an optional way to create a train with one furnace and one chest cart.
 	 * 
@@ -222,8 +284,8 @@ public abstract class TrainStation {
 		MinecartGroup train = MinecartGroup.spawn(stop, this.direction.getOppositeFace(), carts);
 		for(MinecartMember<?> mm : train) {
 			if(mm instanceof MinecartMemberChest) {
-//				ItemStack coal = new ItemStack(Material.COAL, 64);
-//				MinecartMemberChest coalChest = (MinecartMemberChest) mm;
+				//				ItemStack coal = new ItemStack(Material.COAL, 64);
+				//				MinecartMemberChest coalChest = (MinecartMemberChest) mm;
 				//			coalChest.getEntity().getInventory().addItem(new ItemStack[]{coal, coal, coal, coal, coal, coal});			
 			}
 			if(mm instanceof MinecartMemberFurnace) {
@@ -381,7 +443,7 @@ public abstract class TrainStation {
 			}
 		}
 	}
-	
+
 	/**
 	 * Adds a cart to the train scheduled for departure
 	 * <p>
@@ -391,13 +453,13 @@ public abstract class TrainStation {
 	 * @param owner
 	 */
 	public void addCart(EntityType type, Player owner) {
-		
+
 		//Check if the departing train does not exist. this may happen, for a brief period, between the departing train leaving and the arriving train arriving.
 		if(this.departingTrain == null) { owner.sendMessage("There are currently no trains to buy carts for."); return; }
-		
+
 		//Get train name, in case the departing train forgets!
 		String trainName = this.departingTrain.getProperties().getTrainName();
-//		int trainSize = this.departingTrain.size() - 1;
+		//		int trainSize = this.departingTrain.size() - 1;
 		Block toSpawn = null;
 		BlockFace dirToLook = this.direction.getOppositeFace();
 		//Make sure that we are on the right end of the train, to spawn.
@@ -411,11 +473,11 @@ public abstract class TrainStation {
 		//Set the block map to the correct minecart member's block.
 		SmallBlockMap sbm = new SmallBlockMap(toJoinTo.getBlock());
 		if(sbm.isRail(sbm.getBlockAt(dirToLook))) {
-				toSpawn = sbm.getBlockAt(dirToLook);
+			toSpawn = sbm.getBlockAt(dirToLook);
 		}
 		//If there is no room, do not spawn additional carts.
 		if(toSpawn == null) { owner.sendMessage("There is not enough room to spawn additonal carts."); return; }
-		
+
 		Location fixed = toSpawn.getLocation();
 		switch(this.direction) {
 		case NORTH: fixed.setZ(fixed.getZ() + 0.75); break;
@@ -424,7 +486,7 @@ public abstract class TrainStation {
 		case WEST: fixed.setX(fixed.getX() + 0.75); break;
 		default: break;
 		}
-		
+
 		//Spawn the cart and join it to the train.
 		MinecartMember<?> toJoin = MinecartMemberStore.spawn(fixed, type);
 		//Set the new minecarts group properties to the same as the departing train.
@@ -434,13 +496,13 @@ public abstract class TrainStation {
 		MinecartGroup.link(toJoin, toJoinTo);
 		//Re-set the name of the departing train, after linking.
 		this.departingTrain.getProperties().setName(trainName);
-		
+
 		//Send a message saying it has been done.
 		if(type.equals(EntityType.MINECART)) owner.sendMessage("You bought a passenger cart");
 		else if(type.equals(EntityType.MINECART_CHEST)) owner.sendMessage("You bought a storage cart");
 	}
-	
-	
+
+
 	/**
 	 * Removes a cart from the departing train.
 	 * 
@@ -467,11 +529,11 @@ public abstract class TrainStation {
 	 * @return
 	 */
 	public abstract MinecartGroup findNextDeparture();
-	
+
 	public MinecartGroup getDepartingTrain() {
 		return departingTrain;
 	}
-	
+
 	public void setDepartingTrain(MinecartGroup train) {
 		this.departingTrain = train;
 	}

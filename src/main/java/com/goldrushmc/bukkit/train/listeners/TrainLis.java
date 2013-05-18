@@ -4,7 +4,6 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -12,7 +11,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.bergerkiller.bukkit.tc.controller.MinecartGroup;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
-import com.bergerkiller.bukkit.tc.events.GroupCreateEvent;
 import com.bergerkiller.bukkit.tc.events.GroupLinkEvent;
 import com.goldrushmc.bukkit.defaults.DefaultListener;
 import com.goldrushmc.bukkit.train.TrainFactory;
@@ -21,40 +19,6 @@ public class TrainLis extends DefaultListener {
 
 	public TrainLis(JavaPlugin plugin) {
 		super(plugin);
-	}
-	
-	public void onBuyCartEvent(GroupCreateEvent event) {
-		event.getGroup();
-	}
-
-	/**
-	 * This will facilitate the need to update the {@link TrainFactory#ownerStorage} list, because if the inventory changes, the instance changes.
-	 * 
-	 * @param e The {@link InventoryMoveItemEvent} associated with the chest.
-	 */
-	public void onMinecartChestInventory(InventoryMoveItemEvent e) {
-		//TODO Still need to figure out minecart permissions.
-		Inventory inv = e.getInitiator();
-
-		//This simulataneously figures out if it is a minecart inventory, and the owner of that inventory.
-		Player p = TrainFactory.findOwnerByInv(inv);
-
-		//if we have no owner, then get the opposite inventory, in hopes that it will be a minecart owned inventory.
-		@SuppressWarnings("unused")
-		Inventory toUse = null;
-		if(p == null) {
-			Inventory source = e.getSource(), dest = e.getDestination();
-			if(inv == source) {
-				toUse = dest;
-			}
-			else {
-				toUse = source;
-			}
-			//It is safe to assume at this point that this inventory is indeed part of an owned minecart, so we proceed.
-		} else {
-			toUse = inv;
-		}
-
 	}
 
 	/**
@@ -76,11 +40,11 @@ public class TrainLis extends DefaultListener {
 		}
 	}
 
-/*
+	/*
 	/**
 	 *  THIS EVENT IS NOT BEING USED AT THE MOMENT. WE NEED TO FIGURE OUT WHAT TO DO WITH BROKEN CARTS
 	 * @param event
-	
+
 	//	@EventHandler(priority = EventPriority.MONITOR)
 	public void onGroupBreak(GroupRemoveEvent event) {
 		MinecartGroup mg = event.getGroup();
@@ -148,24 +112,24 @@ public class TrainLis extends DefaultListener {
 			} catch (ClassCastException c) {}
 		}
 	}
-	
-	*/
+
+	 */
 
 	/**
 	 * Handles the interaction of each player, determines what method should be called in each case.
 	 * 
 	 * @param event The {@link PlayerInteractEvent} called.
 	 */
-//	@EventHandler
+	//	@EventHandler
 	public void onInteraction(PlayerInteractEvent event) {
 		Block block = event.getClickedBlock();
 
 		//If block is null, fail silently.
 		if(block == null) return;
 		//If the block type is a rail, we pass it to the method in charge of rail clicking.
-//		if(TrainTools.isRail(block)) onRailClick(event);
+		//		if(TrainTools.isRail(block)) onRailClick(event);
 	}
-	
+
 	/*
 	/**
 	 * Controls how the player sets coordinates for the creation of trains.
@@ -177,8 +141,8 @@ public class TrainLis extends DefaultListener {
 		Block block = event.getClickedBlock();
 
 		/*The tool of choice is the blaze rod.
-		 * We check to make sure the blaze rod has the appropriate itemmeta added to it.
-		 *
+	 * We check to make sure the blaze rod has the appropriate itemmeta added to it.
+	 *
 		if(event.getItem() == null) return;
 		if(!event.getItem().getItemMeta().hasLore()) return;
 		ItemStack item = event.getItem();
@@ -225,7 +189,7 @@ public class TrainLis extends DefaultListener {
 			}
 		}
 	}
-	*/
+	 */
 
 
 
