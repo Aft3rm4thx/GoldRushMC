@@ -1,4 +1,4 @@
-package com.goldrushmc.bukkit.train.station;
+package com.goldrushmc.bukkit.train.exceptions;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

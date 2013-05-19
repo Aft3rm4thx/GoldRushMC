@@ -99,7 +99,7 @@ public class TrainStationLis extends DefaultListener {
 			}
 
 			//The train has hit the stop block, and needs to stop.
-			else if(stationStore.get(stationArea.get(to)).getStopBlock().contains(to)) {
+			else if(stationStore.get(stationArea.get(to)).getStopBlocks().contains(to)) {
 				String station = stationArea.get(to);
 				//Check to see if the train has been stopped. if so, don't call the event.
 				if(hasStopped.containsKey(mg)) if(hasStopped.get(mg)) return;
@@ -195,12 +195,11 @@ public class TrainStationLis extends DefaultListener {
 
 	@EventHandler
 	public void onTrainDepart(TrainExitStationEvent event) {
+		//Train is removed from Train list after it departs. no need to remove it again.
 		//		Bukkit.broadcastMessage(event.getTrain().getProperties().getTrainName() + " has left the station " + event.getTrainStation().getStationName());
-		event.getTrainStation().removeTrain(event.getTrain());
 		hasStopped.put(event.getTrain(), false);
 	}
 
-	//TODO This may be useless. Depends on how large the station is, and how many directions the station can take.
 	@EventHandler
 	public void onTrainArrive(TrainEnterStationEvent event) {
 		MinecartGroup mg = event.getTrain();
@@ -226,6 +225,7 @@ public class TrainStationLis extends DefaultListener {
 			if(mm instanceof MinecartMemberFurnace) {
 				if(mm.getBlock().equals(toStop)) {
 					train.getProperties().setSpeedLimit(0);
+					station.setDepartingTrain(train);
 					hasStopped.put(train, true);
 				}
 				else {
@@ -265,7 +265,7 @@ public class TrainStationLis extends DefaultListener {
 		if(!TrainStation.getTrainStations().isEmpty()) {
 			for(TrainStation station : TrainStation.getTrainStations()) {
 				stationStore.put(station.getStationName(), station);
-				for(Block b : station.getArea()) {
+				for(Block b : station.getTrainArea()) {
 					stationArea.put(b, station.getStationName());
 				}
 			}
@@ -273,13 +273,13 @@ public class TrainStationLis extends DefaultListener {
 	}
 	public static void addStation(TrainStation station) {
 		stationStore.put(station.getStationName(), station);
-		for(Block b : station.getArea()) {
+		for(Block b : station.getTrainArea()) {
 			stationArea.put(b, station.getStationName());
 		}
 	}
 	public static void removeStation(TrainStation station) {
 		stationStore.remove(station.getStationName());
-		for(Block b : station.getArea()) {
+		for(Block b : station.getTrainArea()) {
 			stationArea.remove(b);
 		}
 	}

@@ -3,7 +3,6 @@ package com.goldrushmc.bukkit.train.station;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.Location;
@@ -31,7 +30,6 @@ import com.goldrushmc.bukkit.db.TrainStationTbl;
 import com.goldrushmc.bukkit.db.TrainTbl;
 import com.goldrushmc.bukkit.defaults.DBAccess;
 import com.goldrushmc.bukkit.defaults.DBTrainsAccessible;
-import com.goldrushmc.bukkit.train.CardinalMarker;
 import com.goldrushmc.bukkit.train.SmallBlockMap;
 import com.goldrushmc.bukkit.train.listeners.TrainStationLis;
 import com.goldrushmc.bukkit.train.signs.ISignLogic;
@@ -45,7 +43,7 @@ import com.goldrushmc.bukkit.train.util.TrainTools;
  * @author Diremonsoon 
  * 
  */
-public abstract class TrainStation {
+public abstract class TrainStation extends BlockFinder{
 
 	//For tracking of the stations.
 	protected static List<TrainStation> trainStations = new ArrayList<TrainStation>();
@@ -58,15 +56,10 @@ public abstract class TrainStation {
 	protected final BlockFace direction;
 	protected volatile List<Player> visitors = new ArrayList<Player>();
 	protected List<HumanEntity> workers = new ArrayList<HumanEntity>();
-	protected Map<CardinalMarker, Location> corners;
-	protected final List<Block> perimeter;
-	protected final List<Block> surfaceBlocks;
-	protected final List<Block> area;
+//	protected final List<Block> perimeter;
 	protected final List<Block> trainArea;
-	protected final World world;
-	protected volatile List<MinecartGroup> trains;
+	protected volatile List<MinecartGroup> trains = new ArrayList<MinecartGroup>();
 	protected final List<Block> rails;
-	protected final List<Block> stopBlocks;
 
 	/**
 	 * We require the JavaPlugin because this class must be able to access the database.
@@ -76,32 +69,28 @@ public abstract class TrainStation {
 	 * @param stationName
 	 * @param corners
 	 * @param world
-	 * @throws TooLowException
+	 * @throws Exception 
 	 */
-	public TrainStation(final JavaPlugin plugin, final String stationName, final Map<CardinalMarker, Location> corners, final World world) throws TooLowException { 
+	public TrainStation(final JavaPlugin plugin, final String stationName, final List<Location> markers, final World world) throws Exception {
+		super(world, markers);
 		if(db == null) db = new DBAccess(plugin);
 		this.stationName = stationName;
-		this.corners = corners;
-		this.world = world;
-		this.perimeter = generatePerimeter();
-		this.surfaceBlocks = generateSurface();
-		this.area = getFullArea(this.surfaceBlocks);
-		this.trainArea = getTrainArea(this.surfaceBlocks);
+		this.trainArea = generateTrainArea();
 		this.rails = findRails();
-		this.stopBlocks = this.findStopBlocks(defaultStop);
 		this.signs = generateSignLogic();
 		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
 		BlockFace tempDir = null;
 		if(dir != null) {
 			tempDir = TrainTools.getDirection(dir.getLine(2));
 		}
+		
 		if(tempDir != null) {
 			this.direction = tempDir;	
 		}
 		else {
 			this.direction = BlockFace.SELF;
 		}
-		findWorkers();
+//		findWorkers();
 		//Add to the list of stations for both the listener and static class instance! IMPORTANT
 		trainStations.add(this);
 		TrainStationLis.addStation(this);
@@ -116,19 +105,14 @@ public abstract class TrainStation {
 	 * @param corners
 	 * @param world
 	 * @param stopMat
-	 * @throws TooLowException
+	 * @throws Exception 
 	 */
-	public TrainStation(final JavaPlugin plugin, final String stationName, final Map<CardinalMarker, Location> corners, final World world, Material stopMat) throws TooLowException { 
+	public TrainStation(final JavaPlugin plugin, final String stationName, final List<Location> markers, final World world, Material stopMat) throws Exception {
+		super(world, markers);
 		if(db == null) db = new DBAccess(plugin);
 		this.stationName = stationName;
-		this.corners = corners;
-		this.world = world;
-		this.perimeter = generatePerimeter();
-		this.surfaceBlocks = generateSurface();
-		this.area = getFullArea(this.surfaceBlocks);
-		this.trainArea = getTrainArea(this.surfaceBlocks);
+		this.trainArea = generateTrainArea();
 		this.rails = findRails();
-		this.stopBlocks = this.findStopBlocks(stopMat);
 		this.signs = generateSignLogic();
 		Sign dir = this.signs.getSign(SignType.TRAIN_STATION_DIRECTION);
 		BlockFace tempDir = null;
@@ -141,7 +125,7 @@ public abstract class TrainStation {
 		else {
 			this.direction = BlockFace.SELF;
 		}
-		findWorkers();
+//		findWorkers();
 
 		//Add to the list of stations for both the listener and static class instance! IMPORTANT
 		trainStations.add(this);
@@ -153,32 +137,17 @@ public abstract class TrainStation {
 	/**
 	 * Adds the train station to the database, in case of a server wide crash.
 	 */
-	public void addToDB() {
+	public void addToDB(List<Location> coords) {
 		TrainStationTbl station = new TrainStationTbl();
 		station.setStationName(stationName);
 		Set<TrainStationLocationTbl> corners = new HashSet<TrainStationLocationTbl>();
-		for(int i = 0; i < 4; i++) {
+		List<Location> locs = coords;
+		for(int i = 0; i < 2; i++) {
 			TrainStationLocationTbl corner = new TrainStationLocationTbl();
-			CardinalMarker cm = null;
-			//Iterate through corners.
-			switch(i) {
-			case 0: cm = CardinalMarker.NORTH_EAST_CORNER; break;
-			case 1: cm = CardinalMarker.NORTH_WEST_CORNER; break;
-			case 2: cm = CardinalMarker.SOUTH_EAST_CORNER; break;
-			case 3: cm = CardinalMarker.SOUTH_WEST_CORNER; break;
-			}
-			//Set corner
-			switch(cm) {
-			case NORTH_EAST_CORNER: corner.setCorner("North_East"); break;
-			case NORTH_WEST_CORNER:	corner.setCorner("North_West"); break;
-			case SOUTH_EAST_CORNER:	corner.setCorner("South_East"); break;
-			case SOUTH_WEST_CORNER:	corner.setCorner("South_West"); break;
-			}
-			Location loc = this.corners.get(cm);
 			corner.setStation(station);
-			corner.setX(loc.getBlockX());
-			corner.setY(loc.getBlockY());
-			corner.setZ(loc.getBlockZ());
+			corner.setX(locs.get(i).getBlockX());
+			corner.setY(locs.get(i).getBlockY());
+			corner.setZ(locs.get(i).getBlockZ());
 			corners.add(corner);
 		}
 		db.getDB().save(corners);
@@ -319,101 +288,52 @@ public abstract class TrainStation {
 	 */
 	protected List<Block> generatePerimeter() {
 
-		//Get all of the locations for each corner.
-		Location northEast = corners.get(CardinalMarker.NORTH_EAST_CORNER),
-				northWest = corners.get(CardinalMarker.NORTH_WEST_CORNER),
-				southEast = corners.get(CardinalMarker.SOUTH_EAST_CORNER),
-				southWest = corners.get(CardinalMarker.SOUTH_WEST_CORNER);
-
-		//Iterate through each line of locations, and add them to the perimeter. This should make a rectangle.
-		List<Block> perimeter = new ArrayList<Block>();
-		for(int i = northWest.getBlockZ() + 1; i < southWest.getBlockZ(); i++) {
-			Location loc = new Location(this.world, northWest.getBlockX(), northWest.getBlockY(), i);
-			perimeter.add(loc.getBlock());
-		}
-		for(int i = southWest.getBlockX() + 1; i < southEast.getBlockX(); i++) {
-			Location loc = new Location(this.world, i, southWest.getBlockY(), southWest.getBlockZ());
-			perimeter.add(loc.getBlock());
-		}
-		for(int i = southEast.getBlockZ() - 1; i > northEast.getBlockZ(); i--) {
-			Location loc = new Location(this.world, southEast.getBlockX(), southEast.getBlockY(), i);
-			perimeter.add(loc.getBlock());
-		}
-		for(int i = northEast.getBlockX() - 1; i > northWest.getBlockX(); i--) {
-			Location loc = new Location(this.world, i, northEast.getBlockY(), northEast.getBlockZ());
-			perimeter.add(loc.getBlock());
-		}
-
-		return perimeter;
+//		//Get all of the locations for each corner.
+//		Location northEast = corners.get(CardinalMarker.NORTH_EAST_CORNER),
+//				northWest = corners.get(CardinalMarker.NORTH_WEST_CORNER),
+//				southEast = corners.get(CardinalMarker.SOUTH_EAST_CORNER),
+//				southWest = corners.get(CardinalMarker.SOUTH_WEST_CORNER);
+//
+//		//Iterate through each line of locations, and add them to the perimeter. This should make a rectangle.
+//		List<Block> perimeter = new ArrayList<Block>();
+//		for(int i = northWest.getBlockZ() + 1; i < southWest.getBlockZ(); i++) {
+//			Location loc = new Location(this.world, northWest.getBlockX(), northWest.getBlockY(), i);
+//			perimeter.add(loc.getBlock());
+//		}
+//		for(int i = southWest.getBlockX() + 1; i < southEast.getBlockX(); i++) {
+//			Location loc = new Location(this.world, i, southWest.getBlockY(), southWest.getBlockZ());
+//			perimeter.add(loc.getBlock());
+//		}
+//		for(int i = southEast.getBlockZ() - 1; i > northEast.getBlockZ(); i--) {
+//			Location loc = new Location(this.world, southEast.getBlockX(), southEast.getBlockY(), i);
+//			perimeter.add(loc.getBlock());
+//		}
+//		for(int i = northEast.getBlockX() - 1; i > northWest.getBlockX(); i--) {
+//			Location loc = new Location(this.world, i, northEast.getBlockY(), northEast.getBlockZ());
+//			perimeter.add(loc.getBlock());
+//		}
+//
+//		return perimeter;
+		return null;
 	}
 
-	/**
-	 * Gets the surface of the {@link TrainStation}. (FLAT)
-	 * 
-	 * @return The {@code List}<{@link Block}> that contains all surface blocks.
-	 * @throws TooLowException 
-	 */
-	public List<Block> generateSurface() throws TooLowException {
-
-		List<Block> blocks = new ArrayList<Block>();
-
-		Location northEast = this.corners.get(CardinalMarker.NORTH_EAST_CORNER),
-				//		southEast = this.corners.get(CardinalMarker.SOUTH_EAST_CORNER),
-				northWest = this.corners.get(CardinalMarker.NORTH_WEST_CORNER),
-				southWest = this.corners.get(CardinalMarker.SOUTH_WEST_CORNER);
-
-		if(northEast.getY() < 5)throw new TooLowException(northEast);
-		else if(northWest.getY() < 5)throw new TooLowException(northWest);
-		else if(southWest.getY() < 5) throw new TooLowException(southWest);
-
-		for(int i = northWest.getBlockZ(); i <= southWest.getBlockZ(); i++) {
-			Location start = new Location(this.world, northWest.getX(), northWest.getY(), i);
-			blocks.add(start.getBlock());
-			for(int j = northWest.getBlockX(); j <= northEast.getBlockX(); j++) {
-				Location increment = new Location(this.world, j, start.getY(), start.getZ());
-				blocks.add(increment.getBlock());
-			}
-		}
-		return blocks;
-	}
-
-	public List<Block> getArea() {
-		return this.area;
-	}
-	/**
-	 * Gets all of the blocks of all Y coordinates for each X,Z position.
-	 * @return
-	 */
-	protected List<Block> getFullArea(List<Block> blocks) {
+	public List<Block> generateTrainArea() {
 		List<Block> full = new ArrayList<Block>();
-		for(Block b : blocks) {
-			//Gets 5 blocks below the surface of the train. This can be changed later.
-			//Gets 50 blocks above the b value. This is the max wall height we want anyways.
-			for(int i = (b.getY() - 5); i < (b.getY() + 50); i++) {
-				full.add(world.getBlockAt(b.getX(), i, b.getZ()));
-			}
-		}
-		return full;
-	}
-
-	protected List<Block> getTrainArea(List<Block> blocks) {
-		List<Block> full = new ArrayList<Block>();
-		for(Block b : blocks) {
+		for(Block b : this.surface) {
 			//Gets 2 blocks below, just in case the train dips.
 			//Gets 8 blocks above, in case of incline.
-			for(int i = (b.getY() - 2); i < (b.getY() + 8); i++) {
+			for(int i = (b.getY() - 10); i < (b.getY() + 50); i++) {
 				full.add(world.getBlockAt(b.getX(), i, b.getZ()));
 			}
 		}
 		return full;
 	}
-
+	
+	public List<Block> getTrainArea() {
+		return trainArea;
+	}
 	protected void findWorkers() {
 		//TODO
-	}
-
-	public List<Block> getSurface() {
-		return this.surfaceBlocks;
 	}
 
 	public void addVisitor(Player visitor) {
@@ -425,7 +345,7 @@ public abstract class TrainStation {
 	}
 
 	protected ISignLogic generateSignLogic() {
-		return new SignLogic(this.area);
+		return new SignLogic(this.trainArea);
 	}
 
 	public void findStillTrains() {
@@ -445,7 +365,7 @@ public abstract class TrainStation {
 	}
 
 	/**
-	 * Adds a cart to the train scheduled for departure
+	 * Spawns a cart onto the train scheduled for departure
 	 * <p>
 	 * DEFAULT IMPLEMENTATION.
 	 * 
@@ -538,6 +458,11 @@ public abstract class TrainStation {
 		this.departingTrain = train;
 	}
 
+	/**
+	 * Intended for departing the current queued train, and moving all of the others (if any) closer to the stop block.
+	 * 
+	 * @return true if there is a train to depart.
+	 */
 	public abstract boolean pushQueue();
 	/**
 	 * Changes the signs to reflect the buying and selling of carts for the specified train.
@@ -554,10 +479,8 @@ public abstract class TrainStation {
 	 * @return
 	 */
 	public abstract List<Block> findStopBlocks(Material m);
-
-	public List<Block> getStopBlock() {
-		return stopBlocks;
-	}
+	
+	public abstract List<Block> getStopBlocks(); 
 
 	/**
 	 * This finds the rails which are within the train station.
@@ -568,7 +491,7 @@ public abstract class TrainStation {
 	 */
 	public List<Block> findRails() {
 		List<Block> rails = new ArrayList<Block>();
-		for(Block b : this.area) {
+		for(Block b : this.selectedArea) {
 			if(TrainTools.isRail(b)) {
 				rails.add(b);
 			}
@@ -610,13 +533,7 @@ public abstract class TrainStation {
 
 	public List<HumanEntity> getWorkers() {	return workers;}
 
-	public Map<CardinalMarker, Location> getCorners() {	return corners;}
-
-	public List<Block> getPerimeter() {return perimeter;}
-
 	public List<MinecartGroup> getTrains() {return trains;}
 
 	public List<Block> getRails() {return rails;}
-
-	public World getWorld() {return world;}
 }
