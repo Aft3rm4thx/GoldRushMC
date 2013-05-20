@@ -25,7 +25,7 @@ public class TrainCycleCommand extends CommandDefault {
 		else if(args[0].equalsIgnoreCase("Stop")) {
 			Bukkit.getScheduler().cancelTask(taskID);
 		}
-		return false;
+		return true;
 	}
 
 }

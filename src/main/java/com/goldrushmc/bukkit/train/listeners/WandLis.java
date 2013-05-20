@@ -56,8 +56,8 @@ public class WandLis extends DefaultListener {
 					Location temp = new Location(loc.getWorld(), loc.getX(), loc.getY() + 1, loc.getZ());
 
 					List<Location> marked = wandLoc.get(p);
-					//we have a max of 4 slots available (one for each diagonal cardinal direction.)
-					if(marked.size() == 4) { p.sendMessage(ChatColor.RED + "Please remove one of your markings before selecting another."); return; }
+					//we have a max of 2 slots available (one for each diagonal cardinal direction.)
+					if(marked.size() == 2) { p.sendMessage(ChatColor.RED + "Please remove one of your markings before selecting another."); return; }
 					
 					//Add the location to the list.
 					marked.add(loc);

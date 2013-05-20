@@ -2,7 +2,6 @@ package com.goldrushmc.bukkit.train.station;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -21,20 +20,22 @@ import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberChest;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberFurnace;
 import com.bergerkiller.bukkit.tc.controller.type.MinecartMemberRideable;
 import com.bergerkiller.bukkit.tc.properties.TrainProperties;
-import com.goldrushmc.bukkit.train.CardinalMarker;
 import com.goldrushmc.bukkit.train.SmallBlockMap;
+import com.goldrushmc.bukkit.train.exceptions.StopBlockMismatchException;
 
 public class TrainStationTransport extends TrainStation {
 
 	private final int maxStopBlocks = 4;
 	private final Material stopMat;
+	private final List<Block> stopBlocks;
 	private Block mainStop;
 	//	private final List<Chest> lockers;
 	//	private Map<Player, Chest> lockerPlayerMap = new HashMap<Player, Chest>();
 
-	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world, boolean train) throws TooLowException, StopBlockMismatchException {
-		super(plugin, stationName, corners, world);
+	public TrainStationTransport(JavaPlugin plugin, String stationName,	List<Location> markers, World world, boolean train) throws Exception {
+		super(plugin, stationName, markers, world);
 		this.stopMat = defaultStop;
+		this.stopBlocks = findStopBlocks(this.stopMat);
 		for(Block b : this.stopBlocks) {
 			if(b.getRelative(this.direction).getRelative(BlockFace.DOWN).getType().equals(this.stopMat) 
 					&& b.getRelative(this.direction.getOppositeFace()).getRelative(BlockFace.DOWN).getType().equals(this.stopMat)) {
@@ -53,9 +54,10 @@ public class TrainStationTransport extends TrainStation {
 		//		this.lockers = findLockers();
 	}
 
-	public TrainStationTransport(JavaPlugin plugin, String stationName,	Map<CardinalMarker, Location> corners, World world, Material stopMat, boolean train) throws TooLowException, StopBlockMismatchException {
-		super(plugin, stationName, corners, world, stopMat);
+	public TrainStationTransport(JavaPlugin plugin, String stationName,	List<Location> markers, World world, Material stopMat, boolean train) throws Exception {
+		super(plugin, stationName, markers, world, stopMat);
 		this.stopMat = stopMat;
+		this.stopBlocks = findStopBlocks(stopMat);
 		for(Block b : this.stopBlocks) {
 			if(b.getRelative(this.direction).getRelative(BlockFace.DOWN).getType().equals(stopMat) 
 					&& b.getRelative(this.direction.getOppositeFace()).getRelative(BlockFace.DOWN).getType().equals(stopMat)) {
@@ -75,7 +77,7 @@ public class TrainStationTransport extends TrainStation {
 	}
 
 	/**
-	 * A way to find all of the lockers in the area.
+	 * A way to find all of the lockers in the selectedArea.
 	 * 
 	 * @return
 	 */
@@ -149,7 +151,7 @@ public class TrainStationTransport extends TrainStation {
 			default: break;
 			}
 		}
-		
+
 	}
 
 	@Override
@@ -277,6 +279,11 @@ public class TrainStationTransport extends TrainStation {
 	}
 
 	@Override
+	public List<Block> getStopBlocks() {
+		return stopBlocks;
+	}
+
+	@Override
 	public MinecartGroup findNextDeparture() {
 		for(MinecartGroup mg : this.trains) {
 			for(MinecartMember<?> mm : mg) {
@@ -292,9 +299,10 @@ public class TrainStationTransport extends TrainStation {
 
 	@Override
 	public boolean pushQueue() {
-		MinecartGroup mg = findNextDeparture();
+		MinecartGroup mg = this.departingTrain;
 		if(mg == null) return false;
 		mg.getProperties().setSpeedLimit(0.4);
+		mg.getProperties().setColliding(false);
 		for(MinecartMember<?> mm : mg) {
 			if(mm instanceof MinecartMemberFurnace) {
 				MinecartMemberFurnace power = (MinecartMemberFurnace) mm;
@@ -304,16 +312,15 @@ public class TrainStationTransport extends TrainStation {
 				}
 			}
 		}
-		this.departingTrain = null;
+		this.trains.remove(mg);
 		if(this.trains.isEmpty()) return true;
 		for(MinecartGroup train : this.trains) {
-			if(!train.equals(mg)) {
-				train.setForwardForce(0.4);
-			}
+			train.setForwardForce(0.4);
 		}
 		return true;
 	}
 
+	@Override
 	public void changeSignLogic(String trainName) {
 		this.signs.updateTrain(trainName);
 	}

@@ -20,11 +20,11 @@ public class TrainTools {
 	}
 	
 	public static BlockFace getDirection(String direction) {
-		switch(direction) {
-		case "North": return BlockFace.NORTH;
-		case "South": return BlockFace.SOUTH;
-		case "East": return BlockFace.EAST;
-		case "West": return BlockFace.WEST;
+		switch(direction.toLowerCase()) {
+		case "north": return BlockFace.NORTH;
+		case "south": return BlockFace.SOUTH;
+		case "east": return BlockFace.EAST;
+		case "west": return BlockFace.WEST;
 		default: return null;
 		}
 	}
